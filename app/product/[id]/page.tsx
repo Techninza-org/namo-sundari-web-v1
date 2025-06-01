@@ -1,292 +1,235 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Star, Heart, ShoppingBag, Minus, Plus, ArrowLeft, Share2, Award, Truck, RotateCcw } from "lucide-react"
-import ProductCard from "@/components/product-card"
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Star,
+  Heart,
+  ShoppingBag,
+  Minus,
+  Plus,
+  ArrowLeft,
+  Share2,
+  Award,
+  Truck,
+  RotateCcw,
+} from "lucide-react";
+import ProductCard from "@/components/product-card";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
 
-// Sample product database
-const productsDatabase = [
-  {
-    id: 1,
-    name: "Mystic Rose Attar",
-    price: 2499,
-    originalPrice: 3299,
-    image: "/placeholder.svg?height=600&width=600",
-    additionalImages: [
-      "/placeholder.svg?height=600&width=600&text=Rose+Attar+1",
-      "/placeholder.svg?height=600&width=600&text=Rose+Attar+2",
-      "/placeholder.svg?height=600&width=600&text=Rose+Attar+3",
-    ],
-    rating: 4.8,
-    reviews: 124,
-    isNew: true,
-    category: "Attar",
-    zodiac: "Cancer",
-    description:
-      "Handcrafted rose attar with sacred sandalwood, this exquisite blend captures the divine essence of fresh roses distilled with pure sandalwood oil. Created using traditional methods passed down through generations, each drop carries the intention of love and spiritual elevation.",
-    longDescription:
-      "Our Mystic Rose Attar is a sacred blend created in the ancient tradition of Indian perfumery. Each batch is carefully distilled using copper vessels and pure sandalwood oil as the base. The roses are hand-picked at dawn when their aroma is at its peak, and the entire process is accompanied by sacred mantras to infuse positive energy.\n\nThis alcohol-free attar carries the spiritual essence of the rose, known for opening the heart chakra and fostering love and compassion. The sandalwood base adds grounding properties, making this blend perfect for meditation, prayer, or simply as a daily fragrance that connects you to your higher self.\n\nEach bottle contains 10ml of pure attar oil that will last for months, as only a drop is needed for a long-lasting fragrance experience.",
-    ingredients: "Pure sandalwood oil, steam-distilled rose essence, sacred intentions",
-    benefits: [
-      "Opens the heart chakra",
-      "Calms the mind and reduces anxiety",
-      "Enhances spiritual practices",
-      "Alcohol-free and long-lasting",
-      "Suitable for sensitive skin",
-    ],
-    usage:
-      "Apply a small drop to pulse points (wrists, neck, behind ears) for personal fragrance. Add to diffuser or oil burner for room fragrance. Can be added to bath water or unscented lotion for full-body application.",
-    stock: 15,
-    sku: "MS-RA-001",
-  },
-  {
-    id: 2,
-    name: "Aries Fire Perfume",
-    price: 1899,
-    image: "/placeholder.svg?height=600&width=600",
-    additionalImages: [
-      "/placeholder.svg?height=600&width=600&text=Aries+1",
-      "/placeholder.svg?height=600&width=600&text=Aries+2",
-    ],
-    rating: 4.9,
-    reviews: 89,
-    isNew: false,
-    category: "Zodiac Perfume",
-    zodiac: "Aries",
-    description: "Bold and energetic scent for Aries souls",
-    longDescription:
-      "Crafted specifically for the fiery Aries spirit, this energizing blend combines stimulating citrus notes with warm spices to ignite passion and courage. The dominant notes of bergamot and black pepper reflect the pioneering and adventurous nature of Aries, while subtle hints of frankincense provide spiritual grounding for this action-oriented sign.\n\nEach Zodiac perfume is created during its corresponding astrological season, harnessing the powerful cosmic energies of that time. The Aries Fire Perfume is alcohol-free, using a base of jojoba oil to carry these powerful scents in a skin-nourishing formula.",
-    ingredients: "Jojoba oil, essential oils of bergamot, black pepper, frankincense, and cedarwood",
-    benefits: [
-      "Boosts confidence and courage",
-      "Stimulates motivation and drive",
-      "Enhances leadership qualities",
-      "Alcohol-free and skin-nourishing",
-      "Aligns with Aries energy",
-    ],
-    usage:
-      "Apply to pulse points as needed throughout the day. Best used during times when you need extra courage, motivation, or leadership energy.",
-    stock: 23,
-    sku: "ZP-AR-001",
-  },
-  {
-    id: 3,
-    name: "Sacred Sandalwood Oil",
-    price: 3499,
-    image: "/placeholder.svg?height=600&width=600",
-    additionalImages: [
-      "/placeholder.svg?height=600&width=600&text=Sandalwood+1",
-      "/placeholder.svg?height=600&width=600&text=Sandalwood+2",
-    ],
-    rating: 4.7,
-    reviews: 156,
-    isNew: true,
-    category: "Essential Oil",
-    zodiac: "Taurus",
-    description: "Pure sandalwood oil for meditation",
-    longDescription:
-      "Our Sacred Sandalwood Oil is sourced from sustainably grown Mysore sandalwood trees that have matured for at least 30 years. This precious oil is steam-distilled using traditional methods to preserve its full therapeutic properties and divine aroma.\n\nSandalwood has been used in spiritual practices for thousands of years across various traditions. Its grounding yet elevating scent creates the perfect atmosphere for meditation, helping to quiet the mind while opening the third eye and crown chakras. The warm, woody aroma with subtle sweet undertones brings a sense of peace and clarity.\n\nEach bottle contains 5ml of 100% pure sandalwood essential oil with no additives or dilution. The oil comes in a UV-protective glass bottle with a dropper for precise application.",
-    ingredients: "100% pure Mysore sandalwood essential oil (Santalum album)",
-    benefits: [
-      "Enhances meditation and spiritual practices",
-      "Grounds energy while elevating consciousness",
-      "Calms the nervous system",
-      "Moisturizes and rejuvenates skin",
-      "Supports restful sleep",
-    ],
-    usage:
-      "For meditation: Add 2-3 drops to a diffuser or oil burner. For skin: Dilute with a carrier oil before applying to skin. For sleep: Place a drop on your pillow or in a bedside diffuser.",
-    stock: 8,
-    sku: "EO-SW-001",
-  },
-  {
-    id: 4,
-    name: "Lotus Incense Sticks",
-    price: 599,
-    image: "/placeholder.svg?height=600&width=600",
-    additionalImages: [
-      "/placeholder.svg?height=600&width=600&text=Lotus+1",
-      "/placeholder.svg?height=600&width=600&text=Lotus+2",
-    ],
-    rating: 4.6,
-    reviews: 203,
-    isNew: false,
-    category: "Incense",
-    zodiac: "Pisces",
-    description: "Divine lotus fragrance for spiritual rituals",
-    longDescription:
-      "Our Lotus Incense Sticks are handcrafted using the traditional Masala method, where natural ingredients are rolled onto bamboo sticks without using any synthetic binders. The primary note of lotus flower symbolizes purity and spiritual awakening, making these incense sticks perfect for meditation, yoga practice, or creating a sacred atmosphere in your home.\n\nThe lotus flower, rising from muddy waters to bloom in immaculate beauty, has been a powerful spiritual symbol across Eastern traditions. Its fragrance helps open the crown chakra and facilitates higher states of consciousness. Each stick burns for approximately 45 minutes, releasing a steady stream of this divine aroma.\n\nEach package contains 20 incense sticks and a ceramic incense holder, all presented in a handmade paper box adorned with lotus motifs.",
-    ingredients: "Bamboo sticks, natural resins, lotus flower extract, sandalwood powder, herbs, and spices",
-    benefits: [
-      "Creates a sacred atmosphere",
-      "Enhances meditation and prayer",
-      "Opens the crown chakra",
-      "Made with natural ingredients",
-      "Long burning time (45 minutes per stick)",
-    ],
-    usage:
-      "Light the tip of the incense stick, let it flame for a few seconds, then gently blow out the flame. Place in an incense holder and allow the fragrance to fill your space. Ideal for use during meditation, yoga, or to purify a room.",
-    stock: 42,
-    sku: "IN-LT-001",
-  },
-  {
-    id: 5,
-    name: "Leo Royal Rose",
-    price: 2199,
-    image: "/placeholder.svg?height=600&width=600",
-    additionalImages: [
-      "/placeholder.svg?height=600&width=600&text=Leo+1",
-      "/placeholder.svg?height=600&width=600&text=Leo+2",
-    ],
-    rating: 4.9,
-    reviews: 67,
-    isNew: true,
-    category: "Zodiac Perfume",
-    zodiac: "Leo",
-    description: "Majestic rose blend for Leo energy",
-    longDescription:
-      "Created specifically for the regal Leo, this majestic perfume oil combines luxurious rose with warm amber and subtle citrus notes to enhance the natural charisma and leadership qualities of this fire sign. The dominant rose note symbolizes the Leo's big heart and generous spirit, while amber provides the warmth and confidence that Leos naturally exude.\n\nEach bottle is crafted during the Leo season (July 23 - August 22) when the sun's energy aligns perfectly with this zodiac sign. The formula is alcohol-free, using a base of jojoba oil infused with 24k gold flakes to represent Leo's ruling planet, the Sun.\n\nThis 10ml roll-on bottle is perfect for carrying with you to boost your Leo energy whenever needed.",
-    ingredients: "Jojoba oil, essential oils of rose, amber, bergamot, and frankincense, 24k gold flakes",
-    benefits: [
-      "Enhances confidence and personal power",
-      "Boosts creativity and self-expression",
-      "Attracts recognition and admiration",
-      "Strengthens heart energy",
-      "Alcohol-free and skin-nourishing",
-    ],
-    usage:
-      "Roll onto pulse points (wrists, neck, behind ears) as needed throughout the day. Especially powerful when used before important presentations, creative endeavors, or social gatherings.",
-    stock: 19,
-    sku: "ZP-LE-001",
-  },
-]
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  mainCategoryId: number;
+  subCategoryId: number;
+  vendorId: number;
+  createdAt: string;
+  updatedAt: string;
+  mainCategory: {
+    id: number;
+    name: string;
+    slug: string;
+    description: string;
+    imgUrl: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  subCategory: {
+    id: number;
+    mainCategoryId: number;
+    name: string;
+    slug: string;
+    description: string;
+    imgUrl: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  vendor: {
+    id: number;
+    name: string;
+    email: string;
+    password: string;
+    status: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  variants: {
+    id: number;
+    productId: number;
+    sku: string;
+    price: string;
+    stock: number;
+    images: string[];
+    height: null | number;
+    weight: null | number;
+    createdAt: string;
+    updatedAt: string;
+    attributes: any[];
+  }[];
+  ProductReview: any[];
+}
 
-// Sample reviews
-const productReviews = [
-  {
-    id: 101,
-    productId: 1,
-    name: "Priya Sharma",
-    rating: 5,
-    date: "2024-01-15",
-    title: "Absolutely Divine!",
-    review:
-      "The Mystic Rose Attar is pure magic in a bottle! The fragrance is so authentic and long-lasting. I use it during my morning meditation, and it instantly creates a sacred atmosphere. Will definitely purchase again!",
-    verified: true,
-  },
-  {
-    id: 102,
-    productId: 1,
-    name: "Rahul Gupta",
-    rating: 5,
-    date: "2023-12-20",
-    title: "Best Attar I've Ever Used",
-    review:
-      "I've tried many attars over the years, but this Mystic Rose is truly special. The sandalwood base gives it such depth, and the rose note is perfectly balanced - not too sweet or overwhelming. It lasts all day with just a tiny drop.",
-    verified: true,
-  },
-  {
-    id: 103,
-    productId: 1,
-    name: "Ananya Singh",
-    rating: 4,
-    date: "2023-11-05",
-    title: "Beautiful Fragrance, Small Bottle",
-    review:
-      "The fragrance is absolutely beautiful and authentic. My only small complaint is that the bottle is quite tiny for the price, but I understand that real rose and sandalwood are expensive ingredients. A little does go a long way!",
-    verified: true,
-  },
-  {
-    id: 104,
-    productId: 1,
-    name: "Vikram Patel",
-    rating: 5,
-    date: "2023-10-12",
-    title: "Perfect Gift",
-    review:
-      "I purchased this as a gift for my mother who loves traditional fragrances. She was overjoyed and says it reminds her of the attars her grandmother used to wear. The packaging is also very elegant and gift-worthy.",
-    verified: true,
-  },
-]
+interface RelatedProduct {
+  id: number;
+  name: string;
+  image: string;
+  price: number;
+}
 
-// Related products based on category or zodiac sign
-const getRelatedProducts = (currentProduct: any) => {
-  return productsDatabase
-    .filter(
-      (product) =>
-        product.id !== currentProduct.id &&
-        (product.category === currentProduct.category || product.zodiac === currentProduct.zodiac),
-    )
-    .slice(0, 4)
+interface Review {
+  id: number;
+  productId: number;
+  name: string;
+  rating: number;
+  date: string;
+  title: string;
+  review: string;
+  verified: boolean;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: {
+    product: Product;
+    relatedProducts: RelatedProduct[];
+    reviews: Review[];
+  };
 }
 
 export default function ProductDetailPage() {
-  const params = useParams()
-  const productId = Number(params.id)
+  const params = useParams();
+  const router = useRouter();
+  const productId = params.id;
 
-  const [product, setProduct] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [quantity, setQuantity] = useState(1)
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
-  const [reviews, setReviews] = useState<any[]>([])
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  const token = Cookies.get("token");
 
   useEffect(() => {
-    // Simulate API fetch
-    const fetchProduct = () => {
-      setLoading(true)
-      const foundProduct = productsDatabase.find((p) => p.id === productId)
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/web/get-products/${productId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      if (foundProduct) {
-        setProduct(foundProduct)
-        setRelatedProducts(getRelatedProducts(foundProduct))
+        const data = await response.json();
 
-        // Get reviews for this product
-        const productReviewsList = productReviews.filter((review) => review.productId === productId)
-        setReviews(productReviewsList)
+        if (data.success) {
+          setProduct(data.data.product);
+          setRelatedProducts(data.data.relatedProducts);
+          setReviews(data.data.reviews);
+        } else {
+          console.error(
+            "Product fetch failed:",
+            data.message || "Unknown error"
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setLoading(false)
+    if (productId && token) {
+      fetchProduct();
     }
-
-    fetchProduct()
-  }, [productId])
+  }, [productId, token]);
 
   const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 1 && newQuantity <= (product?.stock || 10)) {
-      setQuantity(newQuantity)
-    }
-  }
+    if (!product) return;
 
-  const handleAddToCart = () => {
-    // Add to cart logic would go here
-    console.log(`Added ${quantity} of ${product?.name} to cart`)
-    // Show confirmation toast or modal
-  }
+    const stock = product.variants[0]?.stock || 10;
+    if (newQuantity >= 1 && newQuantity <= stock) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!product || !product.variants[0]) return;
+
+    setIsAddingToCart(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/web/add-to-cart`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            variantId: product.variants[0].id,
+            quantity: quantity,
+            attributes: product.variants[0].attributes.reduce((acc, attr) => {
+              acc[attr.name] = attr.value;
+              return acc;
+            }, {} as Record<string, string>),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        toast.success("Product added to cart successfully!");
+        router.push("/cart");
+      } else {
+        toast.error(data.message || "Failed to add product to cart");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("An error occurred while adding to cart");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-brand-whisper flex items-center justify-center">
-        <div className="animate-pulse text-brand-maroon text-xl">Loading product details...</div>
+        <div className="animate-pulse text-brand-maroon text-xl">
+          Loading product details...
+        </div>
       </div>
-    )
+    );
   }
 
   if (!product) {
     return (
       <div className="min-h-screen bg-brand-whisper pt-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="font-playfair text-3xl font-bold text-brand-maroon mb-4">Product Not Found</h1>
-          <p className="text-gray-600 mb-8">We couldn't find the product you're looking for.</p>
+          <h1 className="font-playfair text-3xl font-bold text-brand-maroon mb-4">
+            Product Not Found
+          </h1>
+          <p className="text-gray-600 mb-8">
+            We couldn't find the product you're looking for.
+          </p>
           <Link href="/shop">
             <Button className="bg-brand-maroon hover:bg-brand-maroon/90 text-white">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -295,8 +238,17 @@ export default function ProductDetailPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
+
+  // Get the first variant for price and images
+  const mainVariant = product.variants[0] || {
+    price: "0",
+    stock: 0,
+    images: ["/placeholder.svg"],
+    sku: "N/A",
+    attributes: [],
+  };
 
   return (
     <div className="min-h-screen bg-brand-whisper pt-8">
@@ -312,81 +264,108 @@ export default function ProductDetailPage() {
               Shop
             </Link>
             <span className="mx-2">/</span>
-            <Link href={`/shop?category=${product.category}`} className="hover:text-brand-maroon">
-              {product.category}
+            <Link
+              href={`/shop?category=${product.mainCategory.slug}`}
+              className="hover:text-brand-maroon"
+            >
+              {product.mainCategory.name}
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-brand-maroon font-medium">{product.name}</span>
+            <Link
+              href={`/shop?category=${product.mainCategory.slug}&subcategory=${product.subCategory.slug}`}
+              className="hover:text-brand-maroon"
+            >
+              {product.subCategory.name}
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-brand-maroon font-medium">
+              {product.name}
+            </span>
           </nav>
         </div>
 
         {/* Product Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Product Images */}
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             <div className="sticky top-24">
               <div className="relative aspect-square rounded-xl overflow-hidden bg-white mb-4">
                 <Image
-                  src={selectedImage === 0 ? product.image : product.additionalImages[selectedImage - 1]}
+                  src={
+                    mainVariant.images[selectedImage]
+                      ? `${process.env.NEXT_PUBLIC_API_URL_IMG}${mainVariant.images[selectedImage]}`
+                      : "/placeholder.svg"
+                  }
                   alt={product.name}
                   fill
                   className="object-contain"
                 />
-                {product.isNew && (
-                  <Badge className="absolute top-4 left-4 bg-brand-yellow text-brand-maroon">NEW</Badge>
-                )}
-                {product.originalPrice && (
+
+                {mainVariant.stock > 0 && (
                   <Badge className="absolute top-4 right-4 bg-brand-maroon text-white">
-                    SAVE {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                    In Stock
                   </Badge>
                 )}
               </div>
 
               {/* Thumbnail Images */}
-              <div className="grid grid-cols-4 gap-4">
-                <button
-                  onClick={() => setSelectedImage(0)}
-                  className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
-                    selectedImage === 0 ? "border-brand-gold" : "border-transparent"
-                  }`}
-                >
-                  <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
-                </button>
-                {product.additionalImages?.map((img: string, idx: number) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImage(idx + 1)}
-                    className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
-                      selectedImage === idx + 1 ? "border-brand-gold" : "border-transparent"
-                    }`}
-                  >
-                    <Image
-                      src={img || "/placeholder.svg"}
-                      alt={`${product.name} view ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
+              {mainVariant.images.length > 1 && (
+                <div className="grid grid-cols-4 gap-4">
+                  {mainVariant.images.map((img: string, idx: number) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
+                        selectedImage === idx
+                          ? "border-brand-gold"
+                          : "border-transparent"
+                      }`}
+                    >
+                      <Image
+                        src={
+                          `${process.env.NEXT_PUBLIC_API_URL_IMG}${img}` ||
+                          "/placeholder.svg"
+                        }
+                        alt={`${product.name} view ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
 
           {/* Product Info */}
-          <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
             {/* Category & Name */}
             <div className="mb-4">
               <div className="flex items-center gap-3 mb-2">
-                <Badge variant="outline" className="border-brand-gold text-brand-maroon">
-                  {product.category}
+                <Badge
+                  variant="outline"
+                  className="border-brand-gold text-brand-maroon"
+                >
+                  {product.mainCategory.name}
                 </Badge>
-                {product.zodiac && (
-                  <Badge variant="outline" className="border-brand-gold text-brand-maroon">
-                    {product.zodiac}
-                  </Badge>
-                )}
+                <Badge
+                  variant="outline"
+                  className="border-brand-gold text-brand-maroon"
+                >
+                  {product.subCategory.name}
+                </Badge>
               </div>
-              <h1 className="font-playfair text-4xl font-bold text-brand-maroon">{product.name}</h1>
+              <h1 className="font-playfair text-4xl font-bold text-brand-maroon">
+                {product.name}
+              </h1>
             </div>
 
             {/* Rating */}
@@ -396,26 +375,29 @@ export default function ProductDetailPage() {
                   <Star
                     key={i}
                     className={`w-5 h-5 ${
-                      i < Math.floor(product.rating) ? "fill-brand-gold text-brand-gold" : "text-gray-300"
+                      i < 4
+                        ? "fill-brand-gold text-brand-gold"
+                        : "text-gray-300"
                     }`}
                   />
                 ))}
               </div>
               <span className="text-gray-600">
-                {product.rating} ({product.reviews} reviews)
+                {4.5} ({reviews.length} reviews)
               </span>
             </div>
 
             {/* Price */}
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-3xl font-bold text-brand-maroon">₹{product.price.toLocaleString()}</span>
-              {product.originalPrice && (
-                <span className="text-xl text-gray-500 line-through">₹{product.originalPrice.toLocaleString()}</span>
-              )}
+              <span className="text-3xl font-bold text-brand-maroon">
+                ₹{parseInt(mainVariant.price).toLocaleString()}
+              </span>
             </div>
 
             {/* Short Description */}
-            <p className="text-gray-700 mb-8 leading-relaxed">{product.description}</p>
+            <p className="text-gray-700 mb-8 leading-relaxed">
+              {product.description}
+            </p>
 
             {/* Quantity & Add to Cart */}
             <div className="mb-8">
@@ -431,12 +413,14 @@ export default function ProductDetailPage() {
                   >
                     <Minus className="w-4 h-4" />
                   </Button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <span className="w-12 text-center font-medium">
+                    {quantity}
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleQuantityChange(quantity + 1)}
-                    disabled={quantity >= product.stock}
+                    disabled={quantity >= mainVariant.stock}
                     className="rounded-none h-10"
                   >
                     <Plus className="w-4 h-4" />
@@ -444,8 +428,10 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div className="text-sm text-gray-600">
-                  {product.stock > 0 ? (
-                    <span className="text-green-600">In Stock ({product.stock} available)</span>
+                  {mainVariant.stock > 0 ? (
+                    <span className="text-green-600">
+                      In Stock ({mainVariant.stock} available)
+                    </span>
                   ) : (
                     <span className="text-red-600">Out of Stock</span>
                   )}
@@ -457,18 +443,27 @@ export default function ProductDetailPage() {
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Button
                 onClick={handleAddToCart}
-                disabled={product.stock <= 0}
-                className="flex-1 bg-brand-maroon hover:bg-brand-maroon/90 text-white py-6 rounded-full"
+                disabled={mainVariant.stock <= 0 || isAddingToCart}
+                className="flex-1 bg-brand-maroon border border-amber-400 hover:bg-brand-gold/10 text-black py-6 rounded-full"
               >
-                <ShoppingBag className="w-5 h-5 mr-2" />
-                Add to Cart
+                {isAddingToCart ? (
+                  "Adding..."
+                ) : (
+                  <>
+                    <ShoppingBag className="w-5 h-5 mr-2" />
+                    Add to Cart
+                  </>
+                )}
               </Button>
               <Button
                 onClick={() => setIsWishlisted(!isWishlisted)}
-                variant="outline"
-                className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10 py-6 rounded-full"
+                className="border border-amber-400 bg-white text-brand-maroon hover:bg-brand-gold/10  py-6 rounded-full"
               >
-                <Heart className={`w-5 h-5 mr-2 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`} />
+                <Heart
+                  className={`w-5 h-5 mr-2 ${
+                    isWishlisted ? "fill-red-500 text-red-500" : ""
+                  }`}
+                />
                 {isWishlisted ? "Wishlisted" : "Add to Wishlist"}
               </Button>
             </div>
@@ -477,15 +472,15 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg">
                 <Award className="w-5 h-5 text-brand-gold" />
-                <span className="text-sm">100% Natural Ingredients</span>
+                <span className="text-sm">Premium Quality</span>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg">
                 <Truck className="w-5 h-5 text-brand-gold" />
-                <span className="text-sm">Free Shipping over ₹2,000</span>
+                <span className="text-sm">Fast Shipping</span>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg">
                 <RotateCcw className="w-5 h-5 text-brand-gold" />
-                <span className="text-sm">30-Day Satisfaction Guarantee</span>
+                <span className="text-sm">Easy Returns</span>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white/80 rounded-lg">
                 <Share2 className="w-5 h-5 text-brand-gold" />
@@ -497,22 +492,26 @@ export default function ProductDetailPage() {
             <div className="border-t border-gray-200 pt-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-medium">SKU:</span>
-                <span className="text-gray-600">{product.sku}</span>
+                <span className="text-gray-600">{mainVariant.sku}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-medium">Category:</span>
-                <Link href={`/shop?category=${product.category}`} className="text-brand-maroon hover:underline">
-                  {product.category}
+                <Link
+                  href={`/shop?category=${product.mainCategory.slug}`}
+                  className="text-brand-maroon hover:underline"
+                >
+                  {product.mainCategory.name}
                 </Link>
               </div>
-              {product.zodiac && (
-                <div className="flex justify-between items-center mt-2">
-                  <span className="font-medium">Zodiac Sign:</span>
-                  <Link href={`/zodiac?sign=${product.zodiac}`} className="text-brand-maroon hover:underline">
-                    {product.zodiac}
-                  </Link>
-                </div>
-              )}
+              <div className="flex justify-between items-center mt-2">
+                <span className="font-medium">Subcategory:</span>
+                <Link
+                  href={`/shop?category=${product.mainCategory.slug}&subcategory=${product.subCategory.slug}`}
+                  className="text-brand-maroon hover:underline"
+                >
+                  {product.subCategory.name}
+                </Link>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -522,78 +521,50 @@ export default function ProductDetailPage() {
           <Tabs defaultValue="description">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
-              <TabsTrigger value="usage">How to Use</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({reviews.length})</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="reviews">
+                Reviews ({reviews.length})
+              </TabsTrigger>
             </TabsList>
             <div className="mt-6 bg-white/80 backdrop-blur-sm rounded-lg p-8">
               <TabsContent value="description" className="space-y-4">
-                <h3 className="font-playfair text-2xl font-semibold text-brand-maroon mb-4">About {product.name}</h3>
+                <h3 className="font-playfair text-2xl font-semibold text-brand-maroon mb-4">
+                  About {product.name}
+                </h3>
                 <div className="text-gray-700 space-y-4 leading-relaxed">
-                  {product.longDescription.split("\n\n").map((paragraph: string, idx: number) => (
-                    <p key={idx}>{paragraph}</p>
-                  ))}
+                  <p>{product.description}</p>
                 </div>
+              </TabsContent>
 
-                {product.benefits && (
-                  <div className="mt-8">
-                    <h4 className="font-playfair text-xl font-semibold text-brand-maroon mb-4">Benefits</h4>
-                    <ul className="list-disc pl-5 space-y-2">
-                      {product.benefits.map((benefit: string, idx: number) => (
-                        <li key={idx} className="text-gray-700">
-                          {benefit}
-                        </li>
-                      ))}
-                    </ul>
+              <TabsContent value="details">
+                <h3 className="font-playfair text-2xl font-semibold text-brand-maroon mb-4">
+                  Product Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium text-brand-maroon mb-2">
+                      Main Category
+                    </h4>
+                    <p>{product.mainCategory.name}</p>
                   </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="ingredients">
-                <h3 className="font-playfair text-2xl font-semibold text-brand-maroon mb-4">Ingredients</h3>
-                <p className="text-gray-700 mb-6 leading-relaxed">{product.ingredients}</p>
-
-                <div className="bg-brand-sandstone/30 p-6 rounded-lg">
-                  <h4 className="font-playfair text-lg font-semibold text-brand-maroon mb-3">Our Promise</h4>
-                  <p className="text-gray-700 leading-relaxed">
-                    All Namoh Sundari products are 100% natural, ethically sourced, and free from synthetic fragrances,
-                    parabens, and harmful chemicals. We never test on animals and are committed to sustainable practices
-                    in all aspects of our production.
-                  </p>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="usage">
-                <h3 className="font-playfair text-2xl font-semibold text-brand-maroon mb-4">How to Use</h3>
-                <p className="text-gray-700 mb-8 leading-relaxed">{product.usage}</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="p-6 text-center">
-                      <h4 className="font-playfair text-lg font-semibold text-brand-maroon mb-3">For Personal Use</h4>
-                      <p className="text-gray-700 text-sm">
-                        Apply to pulse points for a personal fragrance that connects you to your spiritual essence.
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="p-6 text-center">
-                      <h4 className="font-playfair text-lg font-semibold text-brand-maroon mb-3">For Meditation</h4>
-                      <p className="text-gray-700 text-sm">
-                        Use in a diffuser or apply to third eye chakra before meditation to enhance your practice.
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-md">
-                    <CardContent className="p-6 text-center">
-                      <h4 className="font-playfair text-lg font-semibold text-brand-maroon mb-3">For Sacred Spaces</h4>
-                      <p className="text-gray-700 text-sm">
-                        Add a few drops to a diffuser to purify your space and create a sacred atmosphere.
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <div>
+                    <h4 className="font-medium text-brand-maroon mb-2">
+                      Subcategory
+                    </h4>
+                    <p>{product.subCategory.name}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-brand-maroon mb-2">
+                      Vendor
+                    </h4>
+                    <p>{product.vendor.name}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-brand-maroon mb-2">
+                      Added On
+                    </h4>
+                    <p>{new Date(product.createdAt).toLocaleDateString()}</p>
+                  </div>
                 </div>
               </TabsContent>
 
@@ -602,7 +573,9 @@ export default function ProductDetailPage() {
                   <h3 className="font-playfair text-2xl font-semibold text-brand-maroon">
                     Customer Reviews ({reviews.length})
                   </h3>
-                  <Button className="bg-brand-maroon hover:bg-brand-maroon/90 text-white">Write a Review</Button>
+                  <Button className="bg-brand-maroon hover:bg-brand-maroon/90 text-white">
+                    Write a Review
+                  </Button>
                 </div>
 
                 {reviews.length > 0 ? (
@@ -612,23 +585,32 @@ export default function ProductDetailPage() {
                         <CardContent className="p-6">
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <h4 className="font-semibold text-brand-maroon text-lg">{review.title}</h4>
+                              <h4 className="font-semibold text-brand-maroon text-lg">
+                                {review.title}
+                              </h4>
                               <div className="flex items-center gap-2 mt-1">
                                 <div className="flex">
                                   {[...Array(5)].map((_, i) => (
                                     <Star
                                       key={i}
                                       className={`w-4 h-4 ${
-                                        i < review.rating ? "fill-brand-gold text-brand-gold" : "text-gray-300"
+                                        i < review.rating
+                                          ? "fill-brand-gold text-brand-gold"
+                                          : "text-gray-300"
                                       }`}
                                     />
                                   ))}
                                 </div>
-                                <span className="text-sm text-gray-500">{review.date}</span>
+                                <span className="text-sm text-gray-500">
+                                  {review.date}
+                                </span>
                               </div>
                             </div>
                             {review.verified && (
-                              <Badge variant="outline" className="border-green-500 text-green-600">
+                              <Badge
+                                variant="outline"
+                                className="border-green-500 text-green-600"
+                              >
                                 Verified Purchase
                               </Badge>
                             )}
@@ -645,8 +627,12 @@ export default function ProductDetailPage() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">No reviews yet. Be the first to review this product!</p>
-                    <Button className="bg-brand-maroon hover:bg-brand-maroon/90 text-white">Write a Review</Button>
+                    <p className="text-gray-500 mb-4">
+                      No reviews yet. Be the first to review this product!
+                    </p>
+                    <Button className="bg-brand-maroon hover:bg-brand-maroon/90 text-white">
+                      Write a Review
+                    </Button>
                   </div>
                 )}
               </TabsContent>
@@ -657,13 +643,27 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mb-16">
-            <h2 className="font-playfair text-3xl font-bold text-brand-maroon mb-8">You May Also Like</h2>
+            <h2 className="font-playfair text-3xl font-bold text-brand-maroon mb-8">
+              You May Also Like
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((relatedProduct) => (
+              {relatedProducts.slice(0, 4).map((relatedProduct) => (
                 <ProductCard
                   key={relatedProduct.id}
-                  product={relatedProduct}
-                  onAddToCart={() => console.log(`Added ${relatedProduct.name} to cart`)}
+                  product={{
+                    id: relatedProduct.id,
+                    name: relatedProduct.name,
+                    price: relatedProduct.price,
+                    image: `${process.env.NEXT_PUBLIC_API_URL_IMG}${relatedProduct.image}`,
+                    category: product.mainCategory.name,
+                    rating: 4.5,
+                    reviews: 0,
+                    isNew: false,
+                    description: "",
+                  }}
+                  onAddToCart={() =>
+                    console.log(`Added ${relatedProduct.name} to cart`)
+                  }
                 />
               ))}
             </div>
@@ -673,7 +673,10 @@ export default function ProductDetailPage() {
         {/* Back to Shop */}
         <div className="text-center">
           <Link href="/shop">
-            <Button variant="outline" className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10">
+            <Button
+              variant="outline"
+              className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Continue Shopping
             </Button>
@@ -681,5 +684,5 @@ export default function ProductDetailPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

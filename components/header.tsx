@@ -1,19 +1,32 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ShoppingBag, Heart, User, Search, Menu, X } from "lucide-react"
-import AnnouncementBar from "./announcement-bar"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  ShoppingBag,
+  Heart,
+  User,
+  Search,
+  Menu,
+  X,
+  LogOut,
+} from "lucide-react";
+import AnnouncementBar from "./announcement-bar";
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [cartCount] = useState(3)
-  const [wishlistCount] = useState(5)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const navigation = [
     { name: "Home", href: "/" },
@@ -21,20 +34,31 @@ export default function Header() {
     { name: "Zodiac Scents", href: "/zodiac" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
-  ]
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
-    }
+      setIsScrolled(window.scrollY > 50);
+    };
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    // Check auth status
+    const token = Cookies.get("authToken");
+    setIsLoggedIn(!!token);
+
+    // TODO: Fetch actual cart and wishlist counts from your API
+    // setCartCount(cartItems.length);
+    // setWishlistCount(wishlistItems.length);
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleLogout = () => {
+    Cookies.remove("authToken");
+    setIsLoggedIn(false);
+    setShowDropdown(false);
+    router.push("/");
+  };
 
   return (
     <>
@@ -46,9 +70,14 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between">
-            {/* Left Navigation - Mobile Menu & Desktop Nav */}
+            {/* Left Navigation */}
             <div className="flex items-center">
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
                 {isMenuOpen ? (
                   <X className="w-5 h-5 text-brand-charcoal" />
                 ) : (
@@ -70,19 +99,24 @@ export default function Header() {
             </div>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center justify-center">
+            <Link
+              href="/"
+              className="flex items-center justify-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
               <div className="relative h-16 w-48">
                 <Image
-                  src="/placeholder.svg?height=64&width=192&text=Namoh+Sundari"
+                  src="/logonamo.webp"
                   alt="Namoh Sundari"
                   fill
                   className="object-contain"
+                  priority
                 />
               </div>
             </Link>
 
             {/* Right Navigation */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 relative">
               <nav className="hidden md:flex items-center space-x-8">
                 {navigation.slice(2).map((item) => (
                   <Link
@@ -95,12 +129,10 @@ export default function Header() {
                 ))}
               </nav>
 
-              {/* Search */}
               <Button variant="ghost" size="icon" className="hidden sm:flex">
                 <Search className="w-5 h-5 text-brand-charcoal" />
               </Button>
 
-              {/* Wishlist */}
               <Link href="/profile?tab=wishlist">
                 <Button variant="ghost" size="icon" className="relative">
                   <Heart className="w-5 h-5 text-brand-charcoal" />
@@ -112,7 +144,6 @@ export default function Header() {
                 </Button>
               </Link>
 
-              {/* Cart */}
               <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingBag className="w-5 h-5 text-brand-charcoal" />
@@ -124,12 +155,55 @@ export default function Header() {
                 </Button>
               </Link>
 
-              {/* User Account */}
-              <Link href="/profile">
-                <Button variant="ghost" size="icon">
-                  <User className="w-5 h-5 text-brand-charcoal" />
-                </Button>
-              </Link>
+              {isLoggedIn ? (
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                  >
+                    <User className="w-5 h-5 text-brand-charcoal" />
+                  </Button>
+                  <AnimatePresence>
+                    {showDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-50 overflow-hidden"
+                      >
+                        <Link
+                          href="/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowDropdown(false)}
+                        >
+                          Profile
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        >
+                          <LogOut className="w-4 h-4 mr-2" /> Logout
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="hidden md:flex space-x-2">
+                  <Link href="/login">
+                    <Button variant="outline" className="text-sm">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="text-sm bg-brand-brown text-white">
+                      Register
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -155,17 +229,52 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
+
                 <div className="pt-4 border-t border-brand-beige">
                   <Button variant="ghost" className="w-full justify-start">
                     <Search className="w-5 h-5 mr-2" />
                     Search Products
                   </Button>
                 </div>
+
+                {!isLoggedIn ? (
+                  <div className="flex flex-col pt-4 space-y-2 border-t border-brand-beige">
+                    <Link href="/login">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button
+                        className="w-full justify-center bg-brand-brown text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Register
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="pt-4 border-t border-brand-beige">
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
               </nav>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
     </>
-  )
+  );
 }
