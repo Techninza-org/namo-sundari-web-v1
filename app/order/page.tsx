@@ -11,6 +11,7 @@ interface Address {
   street: string;
   city: string;
   pincode: string;
+  district: string;
 }
 
 interface CartItem {
@@ -45,6 +46,15 @@ const CheckoutPage = () => {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    houseNo: "",
+    street: "",
+    city: "",
+    district: "",
+    pincode: "",
+  });
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
   const router = useRouter();
 
   const token = Cookies.get("token");
@@ -55,35 +65,106 @@ const CheckoutPage = () => {
       return;
     }
 
-    const fetchData = async () => {
-      try {
-        const [addressRes, cartRes] = await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/web/get-address`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/web/get-cart`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
-
-        setAddresses(addressRes.data.addresses || []);
-        setCart(cartRes.data || null);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [token, router]);
 
+  const fetchData = async () => {
+    try {
+      const [addressRes, cartRes] = await Promise.all([
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/web/get-address`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/web/get-cart`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
+
+      setAddresses(addressRes.data.addresses || []);
+      setCart(cartRes.data || null);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddressSelect = (id: number) => {
     setSelectedAddressId(id);
+  };
+
+  const handleAddAddress = () => {
+    setShowAddressModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddressModal(false);
+    setNewAddress({
+      houseNo: "",
+      street: "",
+      city: "",
+      district: "",
+      pincode: "",
+    });
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewAddress((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveAddress = async () => {
+    if (
+      !newAddress.houseNo ||
+      !newAddress.street ||
+      !newAddress.city ||
+      !newAddress.district ||
+      !newAddress.pincode
+    ) {
+      alert("Please fill all address fields");
+      return;
+    }
+
+    setIsSavingAddress(true);
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append("houseNo", newAddress.houseNo);
+      formData.append("street", newAddress.street);
+      formData.append("city", newAddress.city);
+      formData.append("district", newAddress.district);
+      formData.append("pincode", newAddress.pincode);
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/web/add-address`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        // Refresh addresses
+        await fetchData();
+        handleCloseModal();
+      } else {
+        throw new Error("Failed to add address");
+      }
+    } catch (error) {
+      console.error("Error adding address:", error);
+      alert("Failed to add address. Please try again.");
+    } finally {
+      setIsSavingAddress(false);
+    }
   };
 
   const loadRazorpayScript = () => {
@@ -143,7 +224,6 @@ const CheckoutPage = () => {
         throw new Error("Failed to create payment order");
       }
 
-      // Prepare product IDs from cart items
       // Razorpay options
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
@@ -181,7 +261,6 @@ const CheckoutPage = () => {
                 {
                   paymentId: response.razorpay_payment_id,
                   addressId: selectedAddressId,
-                  //   product_id: cart.cartId,
                   totalAmount: cart.totalAmountafterCharges,
                   orderStatus: "SUCCESS",
                   paymentMode: "razorpay",
@@ -251,6 +330,12 @@ const CheckoutPage = () => {
       {/* Address Section */}
       <div>
         <h2 className="text-xl font-bold mb-4">Select Delivery Address</h2>
+        <button
+          onClick={handleAddAddress}
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded mb-4"
+        >
+          Add Address
+        </button>
         {addresses.length === 0 ? (
           <p>No address found. Please add a delivery address.</p>
         ) : (
@@ -275,6 +360,9 @@ const CheckoutPage = () => {
                     </p>
                     <p>
                       <strong>City:</strong> {address.city}
+                    </p>
+                    <p>
+                      <strong>District:</strong> {address.district}
                     </p>
                     <p>
                       <strong>Pincode:</strong> {address.pincode}
@@ -348,6 +436,98 @@ const CheckoutPage = () => {
           <p>Your cart is empty.</p>
         )}
       </div>
+
+      {/* Add Address Modal */}
+      {showAddressModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-bold mb-4">Add New Address</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  House No.
+                </label>
+                <input
+                  type="text"
+                  name="houseNo"
+                  value={newAddress.houseNo}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Street</label>
+                <input
+                  type="text"
+                  name="street"
+                  value={newAddress.street}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">City</label>
+                <input
+                  type="text"
+                  name="city"
+                  value={newAddress.city}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  District
+                </label>
+                <input
+                  type="text"
+                  name="district"
+                  value={newAddress.district}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Pincode
+                </label>
+                <input
+                  type="text"
+                  name="pincode"
+                  value={newAddress.pincode}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={handleCloseModal}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+                disabled={isSavingAddress}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAddress}
+                disabled={isSavingAddress}
+                className={`px-4 py-2 rounded text-white ${
+                  isSavingAddress
+                    ? "bg-blue-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {isSavingAddress ? "Saving..." : "Save Address"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

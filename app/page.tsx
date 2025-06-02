@@ -44,25 +44,25 @@ interface Category {
 const mediaLogos = [
   {
     name: "Times of India",
-    logo: "/placeholder.svg?height=40&width=120&text=Times+of+India",
+    logo: "/tindia.jpeg",
   },
   {
     name: "Hindustan Times",
-    logo: "/placeholder.svg?height=40&width=120&text=Hindustan+Times",
+    logo: "/hindustantimes.webp",
   },
   {
     name: "Economic Times",
-    logo: "/placeholder.svg?height=40&width=120&text=Economic+Times",
+    logo: "/goodhomes2222.webp",
   },
   {
     name: "Vogue India",
-    logo: "/placeholder.svg?height=40&width=120&text=Vogue+India",
+    logo: "/elite.png",
   },
   {
     name: "Elle India",
-    logo: "/placeholder.svg?height=40&width=120&text=Elle+India",
+    logo: "/yourstory.webp",
   },
-  { name: "Femina", logo: "/placeholder.svg?height=40&width=120&text=Femina" },
+  // { name: "Femina", logo: "/placeholder.svg?height=40&width=120&text=Femina" },
 ];
 
 export default function HomePage() {
@@ -152,11 +152,12 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
             {/* Left Content */}
             <div className="lg:col-span-8 relative">
-              <div className="relative h-[600px] overflow-hidden rounded-lg">
+              <div className="relative h-[600px] w-full overflow-hidden rounded-lg">
                 <Image
-                  src="/placeholder.svg?height=600&width=800&text=Founder+in+Sacred+Workshop"
+                  src="/perfumehero.avif"
                   alt="Namoh Sundari Founder"
-                  fill
+                  width={1920}
+                  height={600}
                   className="object-cover"
                   priority
                 />
@@ -230,21 +231,38 @@ export default function HomePage() {
       {/* Media Mentions Bar */}
       <section className="bg-brand-terracotta py-4">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center space-x-8 overflow-x-auto">
-            {mediaLogos.map((media, index) => (
-              <div key={index} className="flex-shrink-0">
-                <Image
-                  src={media.logo}
-                  alt={media.name}
-                  width={120}
-                  height={40}
-                  className="opacity-80 hover:opacity-100 transition-opacity filter brightness-0 invert"
-                />
-              </div>
-            ))}
+          <div className="overflow-hidden">
+            <div className="flex items-center justify-center space-x-8 animate-marquee">
+              {mediaLogos.map((media, index) => (
+                <div key={index} className="flex-shrink-0">
+                  <Image
+                    src={media.logo}
+                    alt={media.name}
+                    width={120}
+                    height={40}
+                    className=" "
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(100%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+        .animate-marquee {
+          display: flex;
+          animation: marquee 15s linear infinite;
+        }
+      `}</style>
 
       {/* Craft Your Sanctuary Section */}
       <section className="py-20 bg-brand-cream">
