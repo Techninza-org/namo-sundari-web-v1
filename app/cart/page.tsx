@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,106 +24,128 @@ import {
 } from "lucide-react";
 
 interface CartItem {
-  id: number;
+  cartItemId: number;
+  productName: string;
+  productSlug: string;
+  productId: number;
   variantId: number;
-  name: string;
+  sku: string;
   price: number;
-  originalPrice?: number;
-  image: string;
-  category: string;
   quantity: number;
-  attributes?: {
-    color?: string;
-    size?: string;
-    [key: string]: any;
-  };
+  itemTotal: number;
+  images: string[];
+  attributes: {
+    name: string;
+    value: string;
+  }[];
+}
+
+interface CartSummary {
+  subtotal: number;
+  totalItems: number;
+}
+
+interface OtherCharges {
+  plateformfee: number;
+  gst: number;
+  deliveryFee: number;
+}
+
+interface CartResponse {
+  items: CartItem[];
+  summary: CartSummary;
+  otherCharges: OtherCharges;
+  totalAmountafterCharges: number;
 }
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const router = useRouter();
+  const [cartData, setCartData] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const token = Cookies.get("token");
 
-  // Fetch cart items from API
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/web/get-cart`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch cart items");
-        }
-
-        const data = await response.json();
-        const transformedItems = data.items.map((item: any) => ({
-          id: item.id,
-          variantId: item.variantId,
-          name: item.name,
-          price: item.price,
-          originalPrice: item.originalPrice,
-          image: item.image || "/placeholder.svg?height=300&width=300",
-          category: item.category || "Perfume",
-          quantity: item.quantity,
-          attributes: item.attributes || {},
-        }));
-
-        setCartItems(transformedItems);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCartItems();
-  }, []);
-
-  // Update item quantity in cart
-  const updateQuantity = async (id: number, newQuantity: number) => {
-    if (newQuantity < 0) return;
-
+  const fetchCartItems = async () => {
     try {
-      const itemToUpdate = cartItems.find((item) => item.id === id);
-      if (!itemToUpdate) return;
-
-      // Optimistically update UI
-      setCartItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === id ? { ...item, quantity: newQuantity } : item
-        )
+      setLoading(true);
+      setError(null);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/web/get-cart`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      // If quantity is 0, remove the item
-      if (newQuantity === 0) {
-        await removeItem(id);
+      if (!response.ok) {
+        throw new Error("Failed to fetch cart items");
+      }
+
+      const data: CartResponse = await response.json();
+      setCartData(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCartItems();
+  }, [token]);
+
+  const updateQuantity = async (cartItemId: number, newQuantity: number) => {
+    if (!cartData || newQuantity <= -1 || isUpdating) return;
+
+    setIsUpdating(true);
+    try {
+      const currentItem = cartData.items.find(
+        (item) => item.cartItemId === cartItemId
+      );
+      if (!currentItem) return;
+
+      if (newQuantity === -1) {
+        await removeItem(cartItemId);
         return;
       }
 
+      setCartData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          items: prev.items.map((item) =>
+            item.cartItemId === cartItemId
+              ? { ...item, quantity: newQuantity }
+              : item
+          ),
+          summary: {
+            ...prev.summary,
+            subtotal:
+              prev.summary.subtotal -
+              currentItem.price * currentItem.quantity +
+              currentItem.price * newQuantity,
+          },
+        };
+      });
+
       const action =
-        newQuantity > itemToUpdate.quantity ? "increment" : "decrement";
+        newQuantity > currentItem.quantity ? "increment" : "decrement";
       const response = await fetch(
-        `http://localhost:3000/api/web/quantity-update/${itemToUpdate.variantId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/web/quantity-update/${cartItemId}`,
         {
           method: "PATCH",
           headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQ2ODU4MjQxLCJleHAiOjE3NDc0NjMwNDF9.PUzeOrEbEQq_f1bCNswucAJt612mRcMmSqmp7H4NBCc",
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ action }),
@@ -133,101 +156,91 @@ export default function CartPage() {
         throw new Error("Failed to update quantity");
       }
 
-      // Refresh cart items after successful update
-      const updatedResponse = await fetch("http://:3000/api/web/get-cart", {
-        method: "GET",
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQ2ODU4MjQxLCJleHAiOjE3NDc0NjMwNDF9.PUzeOrEbEQq_f1bCNswucAJt612mRcMmSqmp7H4NBCc",
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (updatedResponse.ok) {
-        const updatedData = await updatedResponse.json();
-        const updatedItems = updatedData.items.map((item: any) => ({
-          id: item.id,
-          variantId: item.variantId,
-          name: item.name,
-          price: item.price,
-          originalPrice: item.originalPrice,
-          image: item.image || "/placeholder.svg?height=300&width=300",
-          category: item.category || "Perfume",
-          quantity: item.quantity,
-          attributes: item.attributes || {},
-        }));
-        setCartItems(updatedItems);
-      }
+      await fetchCartItems();
     } catch (err) {
       console.error("Error updating quantity:", err);
-      // Revert optimistic update if API call fails
-      setCartItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity } : item
-        )
-      );
       setError("Failed to update quantity. Please try again.");
+      await fetchCartItems();
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  // Remove item from cart
-  const removeItem = async (id: number) => {
-    try {
-      const itemToRemove = cartItems.find((item) => item.id === id);
-      if (!itemToRemove) return;
+  const removeItem = async (variantId: number) => {
+    if (isUpdating) return;
 
-      // Optimistically remove from UI
-      setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+    setIsUpdating(true);
+    try {
+      setCartData((prev) => {
+        if (!prev) return null;
+        const itemToRemove = prev.items.find(
+          (item) => item.variantId === variantId
+        );
+        if (!itemToRemove) return prev;
+
+        return {
+          ...prev,
+          items: prev.items.filter((item) => item.variantId !== variantId),
+          summary: {
+            ...prev.summary,
+            subtotal:
+              prev.summary.subtotal -
+              itemToRemove.price * itemToRemove.quantity,
+            totalItems: prev.summary.totalItems - 1,
+          },
+        };
+      });
 
       const response = await fetch(
-        "http://localhost:3000/api/web/remove-from-cart",
+        `${process.env.NEXT_PUBLIC_API_URL}/web/remove-from-cart`,
         {
           method: "POST",
           headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzQ2ODU4MjQxLCJleHAiOjE3NDc0NjMwNDF9.PUzeOrEbEQq_f1bCNswucAJt612mRcMmSqmp7H4NBCc",
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            variantId: itemToRemove.variantId,
-          }),
+          body: JSON.stringify({ variantId }),
         }
       );
 
       if (!response.ok) {
         throw new Error("Failed to remove item");
       }
+
+      await fetchCartItems();
     } catch (err) {
       console.error("Error removing item:", err);
-      // Revert optimistic removal if API call fails
-      setCartItems((prevItems) => [...prevItems]);
       setError("Failed to remove item. Please try again.");
+      await fetchCartItems();
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const applyPromoCode = () => {
-    const validCodes = {
+    const validCodes: Record<string, number> = {
       WELCOME10: 10,
       SACRED15: 15,
       ZODIAC20: 20,
     };
 
-    if (validCodes[promoCode as keyof typeof validCodes]) {
+    if (promoCode in validCodes) {
       setAppliedPromo(promoCode);
-      setDiscount(validCodes[promoCode as keyof typeof validCodes]);
+      setDiscount(validCodes[promoCode]);
       setPromoCode("");
     }
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const discountAmount = (subtotal * discount) / 100;
-  const shipping = subtotal > 2000 ? 0 : 150;
-  const total = subtotal - discountAmount + shipping;
+  const removePromoCode = () => {
+    setAppliedPromo("");
+    setDiscount(0);
+  };
 
-  if (loading) {
+  const handleCheckout = () => {
+    router.push("/order");
+  };
+
+  if (loading && !cartData) {
     return (
       <div className="min-h-screen bg-brand-whisper pt-8 flex items-center justify-center">
         <div className="text-center">
@@ -249,7 +262,7 @@ export default function CartPage() {
           </h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={fetchCartItems}
             className="bg-brand-maroon hover:bg-brand-maroon/90 text-white"
           >
             Try Again
@@ -259,7 +272,7 @@ export default function CartPage() {
     );
   }
 
-  if (cartItems.length === 0) {
+  if (!cartData || cartData.items.length === 0) {
     return (
       <div className="min-h-screen bg-brand-whisper pt-8">
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
@@ -279,7 +292,7 @@ export default function CartPage() {
             <Link href="/shop">
               <Button
                 size="lg"
-                className="bg-brand-maroon hover:bg-brand-maroon/90 text-white px-8 py-4 text-lg font-medium rounded-full"
+                className="bg-white border border-black text-black px-8 py-4 text-lg font-medium rounded-full"
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Continue Shopping
@@ -291,17 +304,24 @@ export default function CartPage() {
     );
   }
 
+  const discountAmount = (cartData.summary.subtotal * discount) / 100;
+  const subtotalAfterDiscount = cartData.summary.subtotal - discountAmount;
+  const finalTotal =
+    subtotalAfterDiscount +
+    cartData.otherCharges.plateformfee +
+    cartData.otherCharges.gst +
+    cartData.otherCharges.deliveryFee;
+
   return (
     <div className="min-h-screen bg-brand-whisper pt-8">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="font-playfair text-4xl font-bold text-brand-maroon mb-2">
               Shopping Cart
             </h1>
             <p className="text-gray-600">
-              {cartItems.length} items in your sacred collection
+              {cartData.summary.totalItems} items in your sacred collection
             </p>
           </div>
           <Link href="/shop">
@@ -316,11 +336,10 @@ export default function CartPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cartItems.map((item, index) => (
+            {cartData.items.map((item, index) => (
               <motion.div
-                key={item.id}
+                key={item.cartItemId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -330,8 +349,11 @@ export default function CartPage() {
                     <div className="flex items-center gap-6">
                       <div className="relative w-24 h-24 rounded-lg overflow-hidden">
                         <Image
-                          src={item.image}
-                          alt={item.name}
+                          src={
+                            `${process.env.NEXT_PUBLIC_API_URL_IMG}${item.images[0]}` ||
+                            "/placeholder.svg"
+                          }
+                          alt={item.productName}
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -341,28 +363,29 @@ export default function CartPage() {
                       <div className="flex-1">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-playfair text-lg font-semibold text-brand-maroon mb-1">
-                              {item.name}
-                            </h3>
+                            <Link href={`/product/${item.productSlug}`}>
+                              <h3 className="font-playfair text-lg font-semibold text-brand-maroon mb-1 hover:underline">
+                                {item.productName}
+                              </h3>
+                            </Link>
                             <Badge
                               variant="outline"
                               className="border-brand-gold text-brand-maroon text-xs"
                             >
-                              {item.category}
+                              {item.sku}
                             </Badge>
 
-                            {item.attributes && (
-                              <div className="mt-1 flex gap-2">
-                                {item.attributes.color && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Color: {item.attributes.color}
+                            {item.attributes.length > 0 && (
+                              <div className="mt-1 flex gap-2 flex-wrap">
+                                {item.attributes.map((attr, idx) => (
+                                  <Badge
+                                    key={idx}
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    {attr.name}: {attr.value}
                                   </Badge>
-                                )}
-                                {item.attributes.size && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Size: {item.attributes.size}
-                                  </Badge>
-                                )}
+                                ))}
                               </div>
                             )}
 
@@ -370,19 +393,15 @@ export default function CartPage() {
                               <span className="text-xl font-bold text-brand-maroon">
                                 ₹{item.price.toLocaleString()}
                               </span>
-                              {item.originalPrice && (
-                                <span className="text-sm text-gray-500 line-through">
-                                  ₹{item.originalPrice.toLocaleString()}
-                                </span>
-                              )}
                             </div>
                           </div>
 
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(item.variantId)}
                             className="text-gray-400 hover:text-red-500"
+                            disabled={isUpdating}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -394,10 +413,13 @@ export default function CartPage() {
                               variant="outline"
                               size="icon"
                               onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
+                                updateQuantity(
+                                  item.cartItemId,
+                                  item.quantity - 1
+                                )
                               }
                               className="w-8 h-8"
-                              disabled={item.quantity <= 1}
+                              disabled={item.quantity <= 0 || isUpdating}
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
@@ -408,9 +430,13 @@ export default function CartPage() {
                               variant="outline"
                               size="icon"
                               onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
+                                updateQuantity(
+                                  item.cartItemId,
+                                  item.quantity + 1
+                                )
                               }
                               className="w-8 h-8"
+                              disabled={isUpdating}
                             >
                               <Plus className="w-3 h-3" />
                             </Button>
@@ -430,9 +456,7 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* Order Summary */}
           <div className="space-y-6">
-            {/* Promo Code */}
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
                 <h3 className="font-playfair text-lg font-semibold text-brand-maroon mb-4">
@@ -440,9 +464,19 @@ export default function CartPage() {
                 </h3>
                 {appliedPromo ? (
                   <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                    <span className="text-green-700 font-medium">
-                      {appliedPromo} Applied!
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-700 font-medium">
+                        {appliedPromo} Applied!
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={removePromoCode}
+                        className="text-green-700 hover:text-green-800 p-1 h-auto"
+                      >
+                        (Remove)
+                      </Button>
+                    </div>
                     <span className="text-green-700 font-bold">
                       -{discount}%
                     </span>
@@ -455,11 +489,13 @@ export default function CartPage() {
                       onChange={(e) =>
                         setPromoCode(e.target.value.toUpperCase())
                       }
+                      disabled={isUpdating}
                     />
                     <Button
                       onClick={applyPromoCode}
                       variant="outline"
                       className="border-brand-gold text-brand-maroon"
+                      disabled={!promoCode || isUpdating}
                     >
                       Apply
                     </Button>
@@ -471,7 +507,6 @@ export default function CartPage() {
               </CardContent>
             </Card>
 
-            {/* Order Summary */}
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
                 <h3 className="font-playfair text-lg font-semibold text-brand-maroon mb-4">
@@ -481,7 +516,7 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
+                    <span>₹{cartData.summary.subtotal.toLocaleString()}</span>
                   </div>
 
                   {discount > 0 && (
@@ -491,24 +526,41 @@ export default function CartPage() {
                     </div>
                   )}
 
-                  <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span>{shipping === 0 ? "Free" : `₹${shipping}`}</span>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Platform Fee</span>
+                    <span>
+                      ₹{cartData.otherCharges.plateformfee.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>GST</span>
+                    <span>₹{cartData.otherCharges.gst.toLocaleString()}</span>
+                  </div>
+
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Delivery Fee</span>
+                    <span>
+                      ₹{cartData.otherCharges.deliveryFee.toLocaleString()}
+                    </span>
                   </div>
 
                   <Separator />
 
                   <div className="flex justify-between text-lg font-bold text-brand-maroon">
                     <span>Total</span>
-                    <span>₹{total.toLocaleString()}</span>
+                    <span>₹{finalTotal.toLocaleString()}</span>
                   </div>
                 </div>
 
-                <Button className="w-full mt-6 bg-brand-maroon hover:bg-brand-maroon/90 text-white py-3 text-lg font-medium rounded-full">
-                  Proceed to Checkout
+                <Button
+                  className="w-full mt-6 bg-white border border-black hover:bg-brand-gold text-black py-3 text-lg font-medium rounded-full"
+                  disabled={isUpdating}
+                  onClick={handleCheckout}
+                >
+                  {isUpdating ? "Processing..." : "Proceed to Checkout"}
                 </Button>
 
-                {/* Benefits */}
                 <div className="mt-6 space-y-3">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <Truck className="w-4 h-4 text-brand-gold" />

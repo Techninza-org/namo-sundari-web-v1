@@ -27,6 +27,11 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [loginMessage, setLoginMessage] = useState("");
+
+  const isLogin = Cookies.get("role");
+
+  // console.log(isLogin, "bcihdbfv");
 
   const navigation = [
     { name: "Home", href: "/" },
@@ -41,22 +46,30 @@ export default function Header() {
       setIsScrolled(window.scrollY > 50);
     };
 
-    // Check auth status
+    // Check auth status and login message
     const token = Cookies.get("authToken");
-    setIsLoggedIn(!!token);
+    const message = Cookies.get("loginMessage");
 
-    // TODO: Fetch actual cart and wishlist counts from your API
-    // setCartCount(cartItems.length);
-    // setWishlistCount(wishlistItems.length);
+    if (token) {
+      setIsLoggedIn(true);
+    }
+
+    if (message) {
+      setLoginMessage(message);
+      alert(message); // Show the login success message
+      Cookies.remove("loginMessage"); // Clear the message after showing
+    }
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = () => {
-    Cookies.remove("authToken");
+    Cookies.remove("token");
+    Cookies.remove("role");
     setIsLoggedIn(false);
     setShowDropdown(false);
+    setIsMenuOpen(false);
     router.push("/");
   };
 
@@ -116,7 +129,7 @@ export default function Header() {
             </Link>
 
             {/* Right Navigation */}
-            <div className="flex items-center space-x-4 relative">
+            <div className="flex items-center space-x-4">
               <nav className="hidden md:flex items-center space-x-8">
                 {navigation.slice(2).map((item) => (
                   <Link
@@ -155,55 +168,59 @@ export default function Header() {
                 </Button>
               </Link>
 
-              {isLoggedIn ? (
-                <div className="relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                  >
-                    <User className="w-5 h-5 text-brand-charcoal" />
-                  </Button>
-                  <AnimatePresence>
-                    {showDropdown && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-50 overflow-hidden"
-                      >
-                        <Link
-                          href="/profile"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowDropdown(false)}
-                        >
-                          Profile
-                        </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                        >
-                          <LogOut className="w-4 h-4 mr-2" /> Logout
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <div className="hidden md:flex space-x-2">
-                  <Link href="/login">
-                    <Button variant="outline" className="text-sm">
-                      Login
+              <div className="relative">
+                {isLogin ? (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      onBlur={() =>
+                        setTimeout(() => setShowDropdown(false), 200)
+                      }
+                    >
+                      <User className="w-5 h-5 text-brand-charcoal" />
                     </Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button className="text-sm bg-brand-brown text-white">
-                      Register
-                    </Button>
-                  </Link>
-                </div>
-              )}
+                    <AnimatePresence>
+                      {showDropdown && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-50 overflow-hidden"
+                        >
+                          <Link
+                            href="/profile"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setShowDropdown(false)}
+                          >
+                            Profile
+                          </Link>
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          >
+                            <LogOut className="w-4 h-4 mr-2" /> Logout
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                ) : (
+                  <div className="hidden md:flex space-x-2">
+                    <Link href="/login">
+                      <Button variant="outline" className="text-sm">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button className="text-sm bg-brand-brown text-white">
+                        Register
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -259,14 +276,18 @@ export default function Header() {
                   </div>
                 ) : (
                   <div className="pt-4 border-t border-brand-beige">
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsMenuOpen(false)}
                     >
-                      Logout
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" /> Logout
                     </button>
                   </div>
                 )}

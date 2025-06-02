@@ -33,9 +33,11 @@ export default function LuxuryLoginPage() {
         }
       );
 
-      const { token } = response.data;
+      const { token, user } = response.data;
+      console.log(user);
       if (token) {
         Cookies.set("token", token, { expires: 7 }); // Save token for 7 days
+        Cookies.set("role", user.role, { expires: 7 });
         alert("Login successful");
         router.push("/profile"); // Redirect to home page
       } else {

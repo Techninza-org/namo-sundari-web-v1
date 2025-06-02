@@ -25,6 +25,7 @@ import {
   Check,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 interface UserData {
   name: string;
@@ -37,17 +38,36 @@ interface UserData {
 }
 
 interface OrderItem {
-  productName: string;
+  id: number;
+  productId: number;
+  variantId: number;
   quantity: number;
-  price: number;
+  price: string;
+  orderItemStatus: string;
+  variant: {
+    id: number;
+    productId: number;
+    sku: string;
+    price: string;
+    images: string[];
+    product: {
+      id: number;
+      name: string;
+      slug: string;
+    };
+  };
 }
 
 interface Order {
-  id: string;
-  orderDate: string;
+  id: number;
+  userId: number;
+  addressId: number;
+  totalAmount: string;
   status: string;
-  totalAmount: number;
-  items: OrderItem[];
+  orderStatus: string;
+  paymentMode: string;
+  createdAt: string;
+  orderItems: OrderItem[];
 }
 
 interface WishlistItem {
@@ -88,6 +108,7 @@ export default function ProfilePage() {
     addingAddress: false,
   });
   const { toast } = useToast();
+  const router = useRouter();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
@@ -135,7 +156,7 @@ export default function ProfilePage() {
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -189,7 +210,7 @@ export default function ProfilePage() {
       }
 
       const data = await response.json();
-      setOrders(data.orders || []);
+      setOrders(data || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast({
@@ -210,7 +231,7 @@ export default function ProfilePage() {
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -363,9 +384,11 @@ export default function ProfilePage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "delivered":
+      case "success":
         return "bg-green-100 text-green-800";
       case "shipped":
       case "out for delivery":
+      case "confirmed":
         return "bg-blue-100 text-blue-800";
       case "processing":
       case "pending":
@@ -378,6 +401,17 @@ export default function ProfilePage() {
     }
   };
 
+  const formatStatus = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "success":
+        return "Completed";
+      case "confirmed":
+        return "Confirmed";
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    }
+  };
+
   const handleTabChange = (value: string) => {
     if (value === "orders" && orders.length === 0) {
       fetchOrders();
@@ -386,6 +420,10 @@ export default function ProfilePage() {
     } else if (value === "addresses" && addresses.length === 0) {
       fetchAddresses();
     }
+  };
+
+  const handleViewOrderDetails = (orderId: number) => {
+    router.push(`/orderdetails/${orderId}`);
   };
 
   if (isLoading.profile) {
@@ -638,7 +676,7 @@ export default function ProfilePage() {
                                     </h4>
                                     <p className="text-sm text-gray-600">
                                       {new Date(
-                                        order.orderDate
+                                        order.createdAt
                                       ).toLocaleDateString("en-US", {
                                         year: "numeric",
                                         month: "long",
@@ -648,12 +686,17 @@ export default function ProfilePage() {
                                   </div>
                                   <div className="text-right">
                                     <Badge
-                                      className={getStatusColor(order.status)}
+                                      className={getStatusColor(
+                                        order.orderStatus
+                                      )}
                                     >
-                                      {order.status}
+                                      {formatStatus(order.orderStatus)}
                                     </Badge>
                                     <p className="text-lg font-bold text-brand-maroon mt-1">
-                                      ₹{order.totalAmount.toLocaleString()}
+                                      ₹
+                                      {parseInt(
+                                        order.totalAmount
+                                      ).toLocaleString()}
                                     </p>
                                   </div>
                                 </div>
@@ -663,14 +706,14 @@ export default function ProfilePage() {
                                     Items:
                                   </p>
                                   <div className="flex flex-wrap gap-2">
-                                    {order.items.map((item, idx) => (
+                                    {order.orderItems.map((item, idx) => (
                                       <Badge
                                         key={idx}
                                         variant="outline"
                                         className="border-brand-gold text-brand-maroon"
                                       >
-                                        {item.productName} (Qty: {item.quantity}
-                                        )
+                                        {item.variant.product.name} (Qty:{" "}
+                                        {item.quantity})
                                       </Badge>
                                     ))}
                                   </div>
@@ -681,6 +724,9 @@ export default function ProfilePage() {
                                     variant="outline"
                                     size="sm"
                                     className="border-brand-gold text-brand-maroon"
+                                    onClick={() =>
+                                      handleViewOrderDetails(order.id)
+                                    }
                                   >
                                     <Eye className="w-4 h-4 mr-2" />
                                     View Details
@@ -791,7 +837,7 @@ export default function ProfilePage() {
                         My Addresses
                       </h3>
                       <Button
-                        className="bg-brand-maroon hover:bg-brand-maroon/90 text-white"
+                        className="bg-brand-maroon hover:bg-brand-maroon/90 text-black"
                         onClick={() => setShowAddAddressForm(true)}
                       >
                         <Plus className="w-4 h-4 mr-2" />
@@ -902,7 +948,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="flex gap-2 mt-4">
                               <Button
-                                className="bg-brand-maroon hover:bg-brand-maroon/90 text-white"
+                                className="bg-white border boder-black hover:bg-amber-700 text-black"
                                 onClick={handleAddAddress}
                                 disabled={isLoading.addingAddress}
                               >
@@ -961,7 +1007,7 @@ export default function ProfilePage() {
                                         Default
                                       </Badge>
                                     )}
-                                    Address #{address.id}
+                                    Address: {address.id}
                                   </h4>
                                   <Button
                                     variant="ghost"
