@@ -24,7 +24,7 @@ export default function LuxuryLoginPage() {
       formData.append("password", password);
 
       const response = await axios.post(
-        "http://localhost:3000/api/public/user-login",
+        "http://103.119.171.213:3001/api/public/user-login",
         formData,
         {
           headers: {
