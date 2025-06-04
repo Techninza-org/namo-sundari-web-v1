@@ -187,7 +187,7 @@ export default function ProductDetailPage() {
             variantId: product.variants[0].id,
             quantity: quantity,
             attributes: product.variants[0].attributes.reduce((acc, attr) => {
-              acc[attr.name] = attr.value;
+              acc[attr.key] = attr.value;
               return acc;
             }, {} as Record<string, string>),
           }),
@@ -294,14 +294,14 @@ export default function ProductDetailPage() {
           >
             <div className="sticky top-24">
               <div className="relative aspect-square rounded-xl overflow-hidden bg-white mb-4">
-                <Image
+                <img
                   src={
                     mainVariant.images[selectedImage]
                       ? `${process.env.NEXT_PUBLIC_API_URL_IMG}${mainVariant.images[selectedImage]}`
                       : "/placeholder.svg"
                   }
                   alt={product.name}
-                  fill
+                  // fill
                   className="object-contain"
                 />
 

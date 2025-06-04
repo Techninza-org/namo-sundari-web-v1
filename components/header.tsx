@@ -213,7 +213,7 @@ export default function Header() {
                         Login
                       </Button>
                     </Link>
-                    <Link href="/register">
+                    <Link href="/ragister">
                       <Button className="text-sm bg-brand-brown text-white">
                         Register
                       </Button>

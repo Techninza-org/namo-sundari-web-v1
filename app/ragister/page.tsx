@@ -127,7 +127,7 @@ export default function RegisterPage() {
                   placeholder="John"
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-white placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
+                  className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-black placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
                   required
                 />
               </div>
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                   placeholder="Doe"
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-white placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
+                  className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-black placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
                   required
                 />
               </div>
@@ -164,7 +164,7 @@ export default function RegisterPage() {
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-white placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
+                className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-black placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
                 required
               />
             </div>
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-white placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
+                className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-black placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
                 required
               />
             </div>
@@ -200,7 +200,7 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-white placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
+                className="w-full px-4 py-2 rounded-xl bg-transparent border border-gold text-black placeholder-gold focus:outline-none focus:ring-2 focus:ring-gold"
                 required
               />
             </div>

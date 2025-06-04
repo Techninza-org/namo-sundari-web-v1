@@ -1,16 +1,11 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/cart/page": "app/cart/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/about/page": "app/about/page.js",
-  "/privacy/page": "app/privacy/page.js",
-  "/order/page": "app/order/page.js",
-  "/login/page": "app/login/page.js",
-  "/page": "app/page.js",
   "/profile/page": "app/profile/page.js",
-  "/terms/page": "app/terms/page.js",
-  "/zodiac/page": "app/zodiac/page.js",
   "/product/[id]/page": "app/product/[id]/page.js",
+  "/cart/page": "app/cart/page.js",
+  "/page": "app/page.js",
   "/shop/page": "app/shop/page.js",
-  "/ragister/page": "app/ragister/page.js"
+  "/login/page": "app/login/page.js",
+  "/ragister/page": "app/ragister/page.js",
+  "/order/page": "app/order/page.js"
 }

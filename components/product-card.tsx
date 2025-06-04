@@ -1,12 +1,13 @@
 "use client";
 
 import type React from "react";
-
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Image from "next/image";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion } from "framer-motion";
+import axios from "axios";
+import Cookies from "js-cookie";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,44 +24,24 @@ interface Product {
   isNew: boolean;
   category: string;
   description: string;
+  variants?: {
+    id: number;
+    attributes?: {
+      key: string;
+      value: string;
+    }[];
+  }[];
 }
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart: () => void;
 }
 
-export default function ProductCard({
-  product,
-  onAddToCart,
-}: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}web/get-all-products`,
-          {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-          }
-        );
-        setProducts(response.data || []); // Adjust based on actual response structure
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -74,6 +55,59 @@ export default function ProductCard({
 
   const handleCardClick = () => {
     router.push(`/product/${product.id}`);
+  };
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLoading(true);
+    const token = Cookies.get("token");
+
+    try {
+      const variantId = product.variants?.[0]?.id || product.id;
+      const quantity = 1;
+
+      // ✅ Safe attributes extraction
+      const attributes = Array.isArray(product.variants?.[0]?.attributes)
+        ? product.variants[0].attributes.reduce(
+            (acc: Record<string, string>, attr) => {
+              acc[attr.key] = attr.value;
+              return acc;
+            },
+            {}
+          )
+        : {};
+
+      console.log("Sending attributes:", attributes);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/web/add-to-cart`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            variantId,
+            quantity,
+            attributes,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push("/cart");
+      } else {
+        console.error("Add to cart failed:", data);
+        alert("Failed to add to cart");
+      }
+    } catch (error) {
+      console.error("Add to cart error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -91,10 +125,9 @@ export default function ProductCard({
         <div className="relative">
           {/* Product Image */}
           <div className="relative aspect-square overflow-hidden bg-brand-cream/50">
-            <Image
+            <img
               src={product.image || "/placeholder.svg"}
               alt={product.name}
-              fill
               className="object-cover product-image"
             />
 
@@ -116,7 +149,7 @@ export default function ProductCard({
               </Button>
               <Button
                 size="sm"
-                onClick={onAddToCart}
+                onClick={handleAddToCart}
                 className="bg-brand-brown hover:bg-brand-brown/90 text-white rounded-full w-10 h-10 p-0 btn-hover-effect"
               >
                 <ShoppingBag className="w-4 h-4" />
@@ -197,11 +230,12 @@ export default function ProductCard({
 
           {/* Add to Cart Button */}
           <Button
-            onClick={onAddToCart}
+            onClick={handleAddToCart}
+            disabled={loading}
             className="w-full bg-brand-brown hover:bg-brand-brown/90 text-white rounded-md transition-all duration-300 btn-hover-effect text-sm h-9"
           >
             <ShoppingBag className="w-4 h-4 mr-2" />
-            Add to Bag
+            {loading ? "Adding..." : "Add to Cart"}
           </Button>
         </CardContent>
       </Card>

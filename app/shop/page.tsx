@@ -164,7 +164,7 @@ export default function ShopPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-playfair text-xl font-semibold text-[#572C2C]">
-                    Filters
+                    Refine Scents
                   </h3>
                   <Button
                     variant="ghost"
@@ -172,7 +172,7 @@ export default function ShopPage() {
                     onClick={() => {
                       setSelectedCategory("All");
                       setSelectedSubCategory("All");
-                      setPriceRange([0, 50000]);
+                      setPriceRange([0, 10000]);
                     }}
                     className="text-[#D6B57B] hover:text-[#572C2C]"
                   >
@@ -180,13 +180,17 @@ export default function ShopPage() {
                   </Button>
                 </div>
 
-                {/* Category Filter */}
+                {/* Perfume Category Filter */}
                 <div className="mb-6">
-                  <h4 className="font-semibold text-[#572C2C] mb-3">
-                    Category
-                  </h4>
+                  <h4 className="font-semibold text-[#572C2C] mb-3">Type</h4>
                   <div className="space-y-2">
-                    {categories.map((category) => (
+                    {[
+                      "All",
+                      "Eau de Parfum",
+                      "Eau de Toilette",
+                      "Cologne",
+                      "Attar",
+                    ].map((category) => (
                       <div
                         key={category}
                         className="flex items-center space-x-2"
@@ -207,13 +211,20 @@ export default function ShopPage() {
                   </div>
                 </div>
 
-                {/* Sub-Category Filter */}
+                {/* Fragrance Notes Filter */}
                 <div className="mb-6">
                   <h4 className="font-semibold text-[#572C2C] mb-3">
-                    Sub-Category
+                    Fragrance Notes
                   </h4>
                   <div className="space-y-2">
-                    {subCategories.map((subCategory) => (
+                    {[
+                      "All",
+                      "Floral",
+                      "Woody",
+                      "Citrus",
+                      "Oriental",
+                      "Fresh",
+                    ].map((subCategory) => (
                       <div
                         key={subCategory}
                         className="flex items-center space-x-2"
@@ -245,9 +256,9 @@ export default function ShopPage() {
                     <Slider
                       value={priceRange}
                       onValueChange={setPriceRange}
-                      max={50000}
+                      max={10000}
                       min={0}
-                      step={1000}
+                      step={500}
                       className="mb-4"
                     />
                     <div className="flex justify-between text-sm text-gray-600">
