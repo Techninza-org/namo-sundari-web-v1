@@ -357,6 +357,7 @@ export default function ShopPage() {
                         description: product.description,
                         category: product.mainCategory.name,
                         subCategory: product.subCategory.name,
+                        variants: product.variants,
                       }}
                       onAddToCart={() => {}}
                     />

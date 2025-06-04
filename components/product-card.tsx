@@ -13,6 +13,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Heart, ShoppingBag, Eye } from "lucide-react";
 
+interface ProductAttribute {
+  id: number;
+  key: string;
+  value: string;
+}
+
+interface ProductVariant {
+  id: number;
+  attributes?: ProductAttribute[];
+  price: string;
+  images: string[];
+}
+
 interface Product {
   id: number;
   name: string;
@@ -24,13 +37,7 @@ interface Product {
   isNew: boolean;
   category: string;
   description: string;
-  variants?: {
-    id: number;
-    attributes?: {
-      key: string;
-      value: string;
-    }[];
-  }[];
+  variants?: ProductVariant[];
 }
 
 interface ProductCardProps {
@@ -63,48 +70,49 @@ export default function ProductCard({ product }: ProductCardProps) {
     const token = Cookies.get("token");
 
     try {
-      const variantId = product.variants?.[0]?.id || product.id;
+      // Get the first variant or fallback to product ID
+      const variant = product.variants?.[0];
+      const variantId = variant?.id || product.id;
       const quantity = 1;
 
-      // ✅ Safe attributes extraction
-      const attributes = Array.isArray(product.variants?.[0]?.attributes)
-        ? product.variants[0].attributes.reduce(
-            (acc: Record<string, string>, attr) => {
-              acc[attr.key] = attr.value;
-              return acc;
-            },
-            {}
-          )
-        : {};
+      // Extract attributes safely
+      const attributes =
+        variant?.attributes?.reduce((acc: Record<string, string>, attr) => {
+          if (attr.key && attr.value) {
+            acc[attr.key] = attr.value;
+          }
+          return acc;
+        }, {}) || {};
 
-      console.log("Sending attributes:", attributes);
+      console.log("Adding to cart with:", {
+        variantId,
+        quantity,
+        attributes,
+      });
 
-      const response = await fetch(
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/web/add-to-cart`,
         {
-          method: "POST",
+          variantId,
+          quantity,
+          attributes,
+        },
+        {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            variantId,
-            quantity,
-            attributes,
-          }),
         }
       );
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.data) {
         router.push("/cart");
       } else {
-        console.error("Add to cart failed:", data);
-        alert("Failed to add to cart");
+        console.error("Add to cart failed:", response.data);
+        alert(response.data.message || "Failed to add to cart");
       }
     } catch (error) {
       console.error("Add to cart error:", error);
+      alert("An error occurred while adding to cart");
     } finally {
       setLoading(false);
     }
@@ -125,10 +133,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="relative">
           {/* Product Image */}
           <div className="relative aspect-square overflow-hidden bg-brand-cream/50">
-            <img
+            <Image
               src={product.image || "/placeholder.svg"}
               alt={product.name}
-              className="object-cover product-image"
+              width={300}
+              height={300}
+              className="object-cover w-full h-full"
             />
 
             {/* Overlay on hover */}
@@ -150,6 +160,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <Button
                 size="sm"
                 onClick={handleAddToCart}
+                disabled={loading}
                 className="bg-brand-brown hover:bg-brand-brown/90 text-white rounded-full w-10 h-10 p-0 btn-hover-effect"
               >
                 <ShoppingBag className="w-4 h-4" />

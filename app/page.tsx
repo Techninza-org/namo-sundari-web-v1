@@ -90,18 +90,19 @@ export default function HomePage() {
         if (data.success && data.data) {
           const formattedProducts = data.data
             .slice(0, 4)
-            .map((product: Product) => ({
+            .map((product: any) => ({
               id: product.id,
               name: product.name,
               price: parseFloat(product.variants[0]?.price || "0"),
               image:
                 `${process.env.NEXT_PUBLIC_API_URL_IMG}${product.variants[0]?.images[0]}` ||
-                "/placeholder.svg?height=300&width=300",
+                "/placeholder.svg",
               rating: 4.5,
               reviews: 0,
               isNew: true,
               category: product.mainCategory?.name || "Uncategorized",
               description: product.description,
+              variants: product.variants, // Make sure to include variants
             }));
 
           setFeaturedProducts(formattedProducts);
