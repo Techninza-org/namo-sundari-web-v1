@@ -70,6 +70,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     const token = Cookies.get("token");
 
     try {
+      // Check if token exists
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
       // Get the first variant or fallback to product ID
       const variant = product.variants?.[0];
       const variantId = variant?.id || product.id;
