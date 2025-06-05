@@ -1,8 +1,15 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Instagram,
+  Facebook,
+  Twitter,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Footer() {
   return (
@@ -10,9 +17,12 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-16">
         {/* Newsletter */}
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h3 className="font-playfair text-2xl font-bold mb-4">Join Our Sacred Community</h3>
+          <h3 className="font-playfair text-2xl font-bold mb-4">
+            Join Our Sacred Community
+          </h3>
           <p className="text-white/80 mb-6">
-            Subscribe to receive sacred wisdom, exclusive offers, and updates on new arrivals
+            Subscribe to receive sacred wisdom, exclusive offers, and updates on
+            new arrivals
           </p>
           <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <Input
@@ -31,7 +41,7 @@ export default function Footer() {
             <Link href="/" className="inline-block mb-4">
               <div className="relative h-12 w-36">
                 <Image
-                  src="/placeholder.svg?height=48&width=144&text=Namoh+Sundari"
+                  src="/logonamo.webp"
                   alt="Namoh Sundari"
                   fill
                   className="object-contain brightness-200"
@@ -39,17 +49,29 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-white/70 leading-relaxed text-sm">
-              Sacred scents crafted with pure intentions, natural ingredients, and spiritual reverence. Honoring ancient
-              aromatherapy traditions.
+              Sacred scents crafted with pure intentions, natural ingredients,
+              and spiritual reverence. Honoring ancient aromatherapy traditions.
             </p>
             <div className="flex space-x-4">
-              <Button variant="ghost" size="icon" className="text-white/70 hover:text-brand-terracotta rounded-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:text-brand-terracotta rounded-full"
+              >
                 <Instagram className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-white/70 hover:text-brand-terracotta rounded-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:text-brand-terracotta rounded-full"
+              >
                 <Facebook className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-white/70 hover:text-brand-terracotta rounded-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:text-brand-terracotta rounded-full"
+              >
                 <Twitter className="w-5 h-5" />
               </Button>
             </div>
@@ -57,7 +79,9 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="font-playfair text-lg font-semibold text-white mb-4">Quick Links</h4>
+            <h4 className="font-playfair text-lg font-semibold text-white mb-4">
+              Quick Links
+            </h4>
             <ul className="space-y-2">
               {[
                 { name: "Shop All Products", href: "/shop" },
@@ -81,7 +105,9 @@ export default function Footer() {
 
           {/* Customer Care */}
           <div className="space-y-4">
-            <h4 className="font-playfair text-lg font-semibold text-white mb-4">Customer Care</h4>
+            <h4 className="font-playfair text-lg font-semibold text-white mb-4">
+              Customer Care
+            </h4>
             <ul className="space-y-2">
               {[
                 { name: "About Us", href: "/about" },
@@ -105,7 +131,9 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="space-y-4">
-            <h4 className="font-playfair text-lg font-semibold text-white mb-4">Contact Us</h4>
+            <h4 className="font-playfair text-lg font-semibold text-white mb-4">
+              Contact Us
+            </h4>
             <div className="space-y-3">
               <div className="flex items-center space-x-3 text-white/70">
                 <Mail className="w-4 h-4 text-brand-terracotta" />
@@ -126,18 +154,25 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/50 text-sm mb-4 md:mb-0">
-            © 2024 Namoh Sundari. All rights reserved. Crafted with love and devotion.
+            © 2024 Namoh Sundari. All rights reserved. Crafted with love and
+            devotion.
           </p>
           <div className="flex space-x-6">
-            <Link href="/privacy" className="text-white/50 hover:text-brand-terracotta text-sm transition-colors">
+            <Link
+              href="/privacy"
+              className="text-white/50 hover:text-brand-terracotta text-sm transition-colors"
+            >
               Privacy Policy
             </Link>
-            <Link href="/terms" className="text-white/50 hover:text-brand-terracotta text-sm transition-colors">
+            <Link
+              href="/terms"
+              className="text-white/50 hover:text-brand-terracotta text-sm transition-colors"
+            >
               Terms of Service
             </Link>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }

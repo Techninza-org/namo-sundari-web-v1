@@ -174,6 +174,12 @@ export default function ProductDetailPage() {
     if (!product || !product.variants[0]) return;
 
     setIsAddingToCart(true);
+    if (!token) {
+      toast.error("Please log in to add items to your cart.");
+      router.push("/login");
+      return;
+    }
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/web/add-to-cart`,
@@ -181,7 +187,7 @@ export default function ProductDetailPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             variantId: product.variants[0].id,
