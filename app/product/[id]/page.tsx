@@ -131,9 +131,9 @@ export default function ProductDetailPage() {
           `${process.env.NEXT_PUBLIC_API_URL}/web/get-products/${productId}`,
           {
             method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            // headers: {
+            //   Authorization: `Bearer ${token}`,
+            // },
           }
         );
 
@@ -156,10 +156,10 @@ export default function ProductDetailPage() {
       }
     };
 
-    if (productId && token) {
+    if (productId) {
       fetchProduct();
     }
-  }, [productId, token]);
+  }, [productId]);
 
   const handleQuantityChange = (newQuantity: number) => {
     if (!product) return;
@@ -181,7 +181,7 @@ export default function ProductDetailPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            // Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             variantId: product.variants[0].id,

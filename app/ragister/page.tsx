@@ -57,7 +57,7 @@ export default function RegisterPage() {
 
     try {
       const res = await fetch(
-        "http://103.119.171.213:3001/api/public/user-register",
+        `${process.env.NEXT_PUBLIC_API_URL}/public/user-register`,
         {
           method: "POST",
           headers: {

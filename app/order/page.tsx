@@ -152,7 +152,7 @@ const CheckoutPage = () => {
         }
       );
 
-      if (response.status === 200) {
+      if (response.data.message === "Address created successfully") {
         // Refresh addresses
         await fetchData();
         handleCloseModal();

@@ -81,10 +81,25 @@ export default function Header() {
           isScrolled ? "bg-white shadow-soft py-2" : "bg-brand-cream py-4"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="px-4 mr-14">
           <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="flex items-center justify-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <div className="relative h-16 w-48">
+                <Image
+                  src="/logonamo.webp"
+                  alt="Namoh Sundari"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </Link>
             {/* Left Navigation */}
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               <Button
                 variant="ghost"
                 size="icon"
@@ -109,29 +124,14 @@ export default function Header() {
                   </Link>
                 ))}
               </nav>
-            </div>
+            </div> */}
 
             {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center justify-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <div className="relative h-16 w-48">
-                <Image
-                  src="/logonamo.webp"
-                  alt="Namoh Sundari"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            </Link>
 
             {/* Right Navigation */}
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex items-center space-x-8">
-                {navigation.slice(2).map((item) => (
+                {navigation.slice(0).map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
