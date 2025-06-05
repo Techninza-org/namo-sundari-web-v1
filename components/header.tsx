@@ -1,301 +1,437 @@
 "use client";
-
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect, useRef } from "react";
 import {
-  ShoppingBag,
   Heart,
   User,
+  MapPin,
   Search,
+  ShoppingBag,
+  ChevronDown,
   Menu,
   X,
-  LogOut,
 } from "lucide-react";
-import AnnouncementBar from "./announcement-bar";
+import axios from "axios";
+import Cookies from "js-cookie";
+import Link from "next/link";
 
-export default function Header() {
-  const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [loginMessage, setLoginMessage] = useState("");
-
-  const isLogin = Cookies.get("role");
-
-  // console.log(isLogin, "bcihdbfv");
-
-  const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Shop All", href: "/shop" },
-    { name: "Zodiac Scents", href: "/zodiac" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
-  ];
+const DynamicNavigationHeader = () => {
+  const [hoveredItemId, setHoveredItemId] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeMobileCategory, setActiveMobileCategory] = useState(null);
+  const token = Cookies.get("token");
+  const megaMenuRef = useRef(null);
+  const navRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+    fetchCategories();
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-
-    // Check auth status and login message
-    const token = Cookies.get("authToken");
-    const message = Cookies.get("loginMessage");
-
-    if (token) {
-      setIsLoggedIn(true);
-    }
-
-    if (message) {
-      setLoginMessage(message);
-      alert(message); // Show the login success message
-      Cookies.remove("loginMessage"); // Clear the message after showing
-    }
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    Cookies.remove("token");
-    Cookies.remove("role");
-    setIsLoggedIn(false);
-    setShowDropdown(false);
-    setIsMenuOpen(false);
-    router.push("/");
+  const handleClickOutside = (event) => {
+    if (
+      megaMenuRef.current &&
+      !megaMenuRef.current.contains(event.target) &&
+      navRef.current &&
+      !navRef.current.contains(event.target)
+    ) {
+      setHoveredItemId(null);
+      setIsMegaMenuOpen(false);
+    }
+    
+    if (
+      mobileMenuRef.current &&
+      !mobileMenuRef.current.contains(event.target) &&
+      !event.target.closest('.mobile-menu-button')
+    ) {
+      setIsMobileMenuOpen(false);
+      setActiveMobileCategory(null);
+    }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/web/get-all-category`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        }
+      );
+      const data = response.data;
+      if (data.success) {
+        setCategories(data.categories || []);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setLoading(false);
+    }
+  };
+
+  const fetchSubCategories = async (categoryId) => {
+    if (subCategories[categoryId]) return;
+
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/web/get-all-sub-category-by-main-category/${categoryId}`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        }
+      );
+      const data = response.data;
+      if (data.success) {
+        setSubCategories((prev) => ({
+          ...prev,
+          [categoryId]: data.subCategories || [],
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+    }
+  };
+
+  let hideTimeout;
+
+  const handleMouseEnter = (categoryId) => {
+    clearTimeout(hideTimeout);
+    setHoveredItemId(categoryId);
+    setIsMegaMenuOpen(true);
+    fetchSubCategories(categoryId);
+  };
+
+  const handleMouseLeave = () => {
+    hideTimeout = setTimeout(() => {
+      setHoveredItemId(null);
+      setIsMegaMenuOpen(false);
+    }, 200);
+  };
+
+  const handleCategoryClick = (categoryId) => {
+    setHoveredItemId(categoryId);
+    setIsMegaMenuOpen(true);
+    fetchSubCategories(categoryId);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (isMobileMenuOpen) {
+      setActiveMobileCategory(null);
+    }
+  };
+
+  const toggleMobileCategory = (categoryId) => {
+    if (activeMobileCategory === categoryId) {
+      setActiveMobileCategory(null);
+    } else {
+      setActiveMobileCategory(categoryId);
+      fetchSubCategories(categoryId);
+    }
+  };
+
+  if (loading) {
+    return (
+      <header className="bg-white shadow-lg relative z-50">
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <>
-      <AnnouncementBar />
-      <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          isScrolled ? "bg-white shadow-soft py-2" : "bg-brand-cream py-4"
-        }`}
-      >
-        <div className="px-4 mr-14">
-          <div className="flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center justify-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <div className="relative h-16 w-48">
-                <Image
-                  src="/logonamo.webp"
-                  alt="Namoh Sundari"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
+    <header className="bg-white relative z-50">
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          <button 
+            className="mobile-menu-button p-2"
+            onClick={toggleMobileMenu}
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+          
+          <div className="flex justify-center">
+            <Link href="/">
+              <img 
+                src="/namo-logo.png" 
+                alt="Logo" 
+                className="h-12 object-contain"
+              />
             </Link>
-            {/* Left Navigation */}
-            {/* <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? (
-                  <X className="w-5 h-5 text-brand-charcoal" />
-                ) : (
-                  <Menu className="w-5 h-5 text-brand-charcoal" />
-                )}
-              </Button>
+          </div>
+          
+          <div className="flex space-x-4 items-center">
+            <ShoppingBag className="w-5 h-5 cursor-pointer hover:text-gray-800" />
+          </div>
+        </div>
+      </div>
 
-              <nav className="hidden md:flex items-center space-x-8">
-                {navigation.slice(0, 2).map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="text-brand-charcoal hover:text-brand-brown transition-colors font-medium text-sm"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </nav>
-            </div> */}
+      {/* Desktop Top Bar */}
+      <div className="hidden lg:block">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center text-xs">
+          <div className="flex space-x-4">
+            <Link href="#" className="hover:text-gray-800 transition-colors">
+              UNITED STATES
+            </Link>
+            <Link href="#" className="hover:text-gray-800 transition-colors">
+              CONTACT US
+            </Link>
+            <Link href="#" className="hover:text-gray-800 transition-colors">
+              SERVICES
+            </Link>
+          </div>
+            
+          <div className="w-1/3 flex justify-center">
+            <Link href="/">
+              <img 
+                src="/namo-logo2.png" 
+                alt="Logo" 
+                className="h-16 object-contain"
+              />
+            </Link>
+            <Link href="/">
+              <img 
+                src="/namo-logo.png" 
+                alt="Logo" 
+                className="h-16 object-contain"
+              />
+            </Link>
+          </div>
+          
+          <div className="flex space-x-4 items-center">
+            <Link href="#" className="hover:text-gray-800 transition-colors">
+              STORE LOCATOR
+            </Link>
+            <div className="flex space-x-4">
+              <Heart className="w-4 h-4 cursor-pointer hover:text-gray-800" />
+              <User className="w-4 h-4 cursor-pointer hover:text-gray-800" />
+              <ShoppingBag className="w-4 h-4 cursor-pointer hover:text-gray-800" />
+            </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Logo */}
-
-            {/* Right Navigation */}
-            <div className="flex items-center space-x-4">
-              <nav className="hidden md:flex items-center space-x-8">
-                {navigation.slice(0).map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="text-brand-charcoal hover:text-brand-brown transition-colors font-medium text-sm"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </nav>
-
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <Search className="w-5 h-5 text-brand-charcoal" />
-              </Button>
-
-              <Link href="/profile?tab=wishlist">
-                <Button variant="ghost" size="icon" className="relative">
-                  <Heart className="w-5 h-5 text-brand-charcoal" />
-                  {wishlistCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 bg-brand-terracotta text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                      {wishlistCount}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
-
-              <Link href="/cart">
-                <Button variant="ghost" size="icon" className="relative">
-                  <ShoppingBag className="w-5 h-5 text-brand-charcoal" />
-                  {cartCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 bg-brand-terracotta text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                      {cartCount}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
-
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div
+          ref={mobileMenuRef}
+          className="lg:hidden fixed inset-0 bg-white z-50 pt-16 overflow-y-auto"
+        >
+          <div className="container mx-auto px-4 py-4">
+            <div className="mb-4">
               <div className="relative">
-                {isLogin ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowDropdown(!showDropdown)}
-                      onBlur={() =>
-                        setTimeout(() => setShowDropdown(false), 200)
-                      }
-                    >
-                      <User className="w-5 h-5 text-brand-charcoal" />
-                    </Button>
-                    <AnimatePresence>
-                      {showDropdown && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-md z-50 overflow-hidden"
-                        >
-                          <Link
-                            href="/profile"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            Profile
-                          </Link>
-                          <button
-                            onClick={handleLogout}
-                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                          >
-                            <LogOut className="w-4 h-4 mr-2" /> Logout
-                          </button>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </>
-                ) : (
-                  <div className="hidden md:flex space-x-2">
-                    <Link href="/login">
-                      <Button variant="outline" className="text-sm">
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href="/ragister">
-                      <Button className="text-sm bg-brand-brown text-white">
-                        Register
-                      </Button>
-                    </Link>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                />
+                <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+            
+            <ul className="space-y-2">
+              {categories.map((category) => (
+                <li key={category.id} className="border-b border-gray-100">
+                  <div
+                    className="flex justify-between items-center py-3 px-2"
+                    onClick={() => toggleMobileCategory(category.id)}
+                  >
+                    <span className="font-medium">{category.name}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${
+                        activeMobileCategory === category.id ? "rotate-180" : ""
+                      }`}
+                    />
                   </div>
-                )}
+                  
+                  {activeMobileCategory === category.id && subCategories[category.id] && (
+                    <div className="pl-4 pb-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        {subCategories[category.id].map((sub) => (
+                          <Link
+                            href={`/shop?category=${sub.slug}`}
+                            key={sub.id}
+                            className="block py-2"
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              setActiveMobileCategory(null);
+                            }}
+                          >
+                            <div className="mb-2">
+                              {sub.imgUrl ? (
+                                <img
+                                  src={`${process.env.NEXT_PUBLIC_API_URL_IMG}${sub.imgUrl}`}
+                                  alt={sub.name}
+                                  className="w-full h-32 object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-32 bg-gray-100 flex items-center justify-center">
+                                  <span className="text-gray-400">No Image</span>
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-sm">{sub.name}</span>
+                          </Link>
+                        ))}
+                      </div>
+                      <Link
+                        href={`/shop?category=${categories.find(c => c.id === category.id)?.slug}`}
+                        className="block mt-4 text-sm font-medium text-center border-t border-gray-200 pt-3"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          setActiveMobileCategory(null);
+                        }}
+                      >
+                        View All {category.name}
+                      </Link>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+            
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex flex-col space-y-3">
+                <Link href="#" className="py-2 px-2">My Account</Link>
+                <Link href="#" className="py-2 px-2">Wishlist</Link>
+                <Link href="#" className="py-2 px-2">Store Locator</Link>
+                <Link href="#" className="py-2 px-2">Contact Us</Link>
               </div>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden border-t border-brand-beige py-4 bg-white"
-            >
-              <nav className="flex flex-col space-y-4 px-4">
-                {navigation.map((item) => (
+      {/* Desktop Navigation */}
+      <nav className="hidden lg:block border-b border-gray-200" ref={navRef}>
+        <div className="container mx-auto px-4">
+          <ul className="flex justify-center space-x-8">
+            {categories.map((category) => (
+              <li
+                key={category.id}
+                className="relative py-4"
+                onMouseEnter={() => handleMouseEnter(category.id)}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => handleCategoryClick(category.id)}
+              >
+                <div className="flex items-center">
                   <Link
-                    key={item.name}
-                    href={item.href}
-                    className="text-brand-charcoal hover:text-brand-brown transition-colors font-medium py-2"
-                    onClick={() => setIsMenuOpen(false)}
+                    href="#"
+                    className={`text-sm font-medium tracking-wider hover:text-black transition-colors ${
+                      hoveredItemId === category.id ? "text-black" : "text-gray-700"
+                    }`}
                   >
-                    {item.name}
+                    {category.name.toUpperCase()}
                   </Link>
-                ))}
-
-                <div className="pt-4 border-t border-brand-beige">
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Search className="w-5 h-5 mr-2" />
-                    Search Products
-                  </Button>
+                  <ChevronDown
+                    className={`w-4 h-4 ml-1 transition-transform ${
+                      hoveredItemId === category.id ? "rotate-180" : ""
+                    }`}
+                  />
                 </div>
+                <div
+                  className={`absolute bottom-0 left-0 right-0 h-0.5 bg-black transition-all ${
+                    hoveredItemId === category.id ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
 
-                {!isLoggedIn ? (
-                  <div className="flex flex-col pt-4 space-y-2 border-t border-brand-beige">
-                    <Link href="/login">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-center"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button
-                        className="w-full justify-center bg-brand-brown text-white"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Register
-                      </Button>
-                    </Link>
+      {/* Desktop Mega Menu */}
+      {isMegaMenuOpen && hoveredItemId && subCategories[hoveredItemId] && (
+        <div
+          ref={megaMenuRef}
+          className="hidden lg:block absolute left-0 w-full bg-white shadow-lg border-t border-gray-200 z-50"
+          onMouseEnter={() => clearTimeout(hideTimeout)}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            animation: "fadeIn 0.2s ease-out",
+          }}
+        >
+          <div className="container mx-auto px-8 py-8">
+            <div className="grid grid-cols-4 gap-8">
+              {subCategories[hoveredItemId].map((sub) => (
+                <Link 
+                  href={`/shop?category=${sub.slug}`} 
+                  key={sub.id}
+                  className="group"
+                >
+                  <div className="mb-4 overflow-hidden">
+                    {sub.imgUrl ? (
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_API_URL_IMG}${sub.imgUrl}`}
+                        alt={sub.name}
+                        className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
+                        <span className="text-gray-400">No Image</span>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="pt-4 border-t border-brand-beige">
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" /> Logout
-                    </button>
-                  </div>
-                )}
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
-    </>
+                  <h3 className="text-sm font-medium text-gray-900 group-hover:text-black transition-colors">
+                    {sub.name}
+                  </h3>
+                </Link>
+              ))}
+            </div>
+            
+            <div className="mt-8 pt-8 border-t border-gray-200 text-center">
+              <Link
+                href={`/shop?category=${categories.find(c => c.id === hoveredItemId)?.slug}`}
+                className="inline-block text-sm font-medium text-gray-700 hover:text-black border-b border-transparent hover:border-black transition-all pb-1"
+              >
+                VIEW ALL {categories.find(c => c.id === hoveredItemId)?.name.toUpperCase()}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* Prevent scrolling when mobile menu is open */
+        body.mobile-menu-open {
+          overflow: hidden;
+        }
+      `}</style>
+      
+      {/* Add/remove body class when mobile menu opens/closes */}
+      <style jsx global>{`
+        body {
+          overflow: ${isMobileMenuOpen ? 'hidden' : 'auto'};
+        }
+      `}</style>
+    </header>
   );
-}
+};
+
+export default DynamicNavigationHeader;
