@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-export default function CartierHero() {
+export default function CartHero() {
   return (
     <section className="relative w-full h-[90vh] bg-gradient-to-b from-white to-gray-900">
       {/* Background image */}
@@ -18,10 +18,10 @@ export default function CartierHero() {
       {/* Overlay for content */}
       <div className="absolute inset-0 bg-black/40 flex flex-col justify-end items-center text-center pb-16 px-4 z-10">
         <h1 className="text-white text-2xl md:text-4xl font-semibold mb-3">
-          FATHER’S DAY BY CARTIER
+          From the Heart of Tradition to the Hands of Your Hero.{" "}
         </h1>
         <p className="text-white text-sm md:text-base max-w-xl mb-6">
-          For a meaningful moment, the Maison presents the sweetest of gifts.
+          Celebrate Spacial Days with the Soulful Fragrance of Namoh Sundari.{" "}
         </p>
         <button
           onClick={() => (window.location.href = "/shop")}

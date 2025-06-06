@@ -18,6 +18,7 @@ import ProductCard from "@/components/product-card";
 import ReviewCarousel from "@/components/review-carousel";
 import ScrollToTopButton from "@/components/scroll-to-top-button";
 import CartierHero from "@/components/CartierHero";
+import CartHero from "@/components/CartHero";
 
 interface Product {
   id: number;
@@ -89,22 +90,20 @@ export default function HomePage() {
         const data = await response.json();
 
         if (data.success && data.data) {
-          const formattedProducts = data.data
-            .slice(0, 4)
-            .map((product: any) => ({
-              id: product.id,
-              name: product.name,
-              price: parseFloat(product.variants[0]?.price || "0"),
-              image:
-                `${process.env.NEXT_PUBLIC_API_URL_IMG}${product.variants[0]?.images[0]}` ||
-                "/placeholder.svg",
-              rating: 4.5,
-              reviews: 0,
-              isNew: true,
-              category: product.mainCategory?.name || "Uncategorized",
-              description: product.description,
-              variants: product.variants, // Make sure to include variants
-            }));
+          const formattedProducts = data.data.map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            price: parseFloat(product.variants[0]?.price || "0"),
+            image:
+              `${process.env.NEXT_PUBLIC_API_URL_IMG}${product.variants[0]?.images[0]}` ||
+              "/placeholder.svg",
+            rating: 4.5,
+            reviews: 0,
+            isNew: true,
+            category: product.mainCategory?.name || "Uncategorized",
+            description: product.description,
+            variants: product.variants, // Make sure to include variants
+          }));
 
           setFeaturedProducts(formattedProducts);
         }
@@ -190,7 +189,7 @@ export default function HomePage() {
       `}</style>
 
       {/* Craft Your Sanctuary Section */}
-      <section className="py-20 bg-brand-cream">
+      {/* <section className="py-20 bg-brand-cream">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -248,6 +247,49 @@ export default function HomePage() {
               ))}
             </div>
           )}
+        </div>
+      </section> */}
+
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-brand-brown mb-4">
+              Bestsellers
+            </h2>
+            <div className="w-24 h-1 bg-brand-terracotta mx-auto mb-6"></div>
+            <p className="text-brand-charcoal/80 max-w-2xl mx-auto">
+              Our most beloved fragrances, crafted with pure intentions and
+              ancient wisdom
+            </p>
+          </div>
+
+          {loadingProducts ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-terracotta"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.slice(0, 4).map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={() => setCartCount((prev) => prev + 1)}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link href="/shop">
+              <Button
+                variant="outline"
+                className="border-brand-brown text-brand-brown hover:bg-brand-brown/5 px-8 py-6 text-base font-medium rounded-md"
+              >
+                View All Products
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -310,7 +352,7 @@ export default function HomePage() {
                 <Badge className="bg-brand-terracotta text-white mb-3">
                   Limited Edition
                 </Badge>
-                <h3 className="text-gray-900 text-2xl font-extrabold mb-2">
+                <h3 className="text-gray-900 text-xl font-bold mb-2">
                   PURFUME WITH PURPOSE
                 </h3>
                 <p className="text-gray-700 mb-4">
@@ -333,7 +375,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-brand-brown mb-4">
-              Bestsellers
+              Recommended Products
             </h2>
             <div className="w-24 h-1 bg-brand-terracotta mx-auto mb-6"></div>
             <p className="text-brand-charcoal/80 max-w-2xl mx-auto">
@@ -348,7 +390,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product) => (
+              {featuredProducts.slice(5, 9).map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
@@ -372,76 +414,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Promotional Banners Section */}
-      <section className="py-12 bg-brand-cream">
-        <div className="max-w-8xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-            {/* First Banner */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-xl h-64 md:h-80"
-            >
-              <Image
-                src="/desktop-1.png" // Replace with your actual image path
-                alt="Sacred Rituals Collection"
-                fill
-                className="object-cover"
-              />
-              {/* <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              <div className="absolute bottom-6 left-6 text-white">
-                <h3 className="font-playfair text-2xl font-bold mb-2">
-                  Sacred Rituals Collection
-                </h3>
-                <p className="text-white/90 mb-4">
-                  Enhance your spiritual practice
-                </p>
-                <Button
-                  variant="outline"
-                  className="border-white text-white hover:bg-white/10"
-                >
-                  Shop Now
-                </Button>
-              </div> */}
-            </motion.div>
-
-            {/* Second Banner */}
-            {/* <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-xl h-64 md:h-80"
-            >
-              <Image
-                src="/banner2.jpg" // Replace with your actual image path
-                alt="Limited Edition"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              <div className="absolute bottom-6 left-6 text-white">
-                <Badge className="bg-brand-terracotta text-white mb-3">
-                  Limited Edition
-                </Badge>
-                <h3 className="font-playfair text-2xl font-bold mb-2">
-                  Temple Blessings
-                </h3>
-                <p className="text-white/90 mb-4">
-                  Handcrafted with sacred temple flowers
-                </p>
-                <Button
-                  variant="outline"
-                  className="border-white text-white hover:bg-white/10"
-                >
-                  Explore
-                </Button>
-              </div>
-            </motion.div> */}
-          </div>
-        </div>
+      <section>
+        <CartHero />
       </section>
 
       {/* Customer Stories */}
@@ -462,7 +436,7 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-20 bg-brand-brown text-white">
+      {/* <section className="py-20 bg-brand-brown text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="font-playfair text-3xl md:text-4xl font-bold mb-6">
@@ -484,7 +458,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Floating Cart */}
       <motion.div
