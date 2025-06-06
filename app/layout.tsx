@@ -1,21 +1,22 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter, Playfair_Display } from "next/font/google"
-import "./globals.css"
-import Header from "@/components/header"
-import Footer from "@/components/footer"
+import type React from "react";
+import type { Metadata } from "next";
+import { Inter, Playfair_Display } from "next/font/google";
+import "./globals.css";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
+import { CartProvider } from "@/hooks/CartContext";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-})
+});
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
   display: "swap",
-})
+});
 
 export const metadata: Metadata = {
   title: "Namoh Sundari - Sacred Scents, Divine You",
@@ -29,21 +30,23 @@ export const metadata: Metadata = {
       "Handcrafted aromatherapy rooted in ancient wisdom. Discover your spiritual essence through sacred fragrances.",
     images: ["/og-image.jpg"],
   },
-    generator: 'v0.dev'
-}
+  generator: "v0.dev",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className={`${inter.className} antialiased`}>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <CartProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
-  )
+  );
 }

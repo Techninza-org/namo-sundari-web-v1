@@ -13,7 +13,8 @@ import {
 import axios from "axios";
 import Cookies from "js-cookie";
 import Link from "next/link";
-  import { usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useCart } from "@/hooks/CartContext";
 
 const DynamicNavigationHeader = () => {
   const [hoveredItemId, setHoveredItemId] = useState(null);
@@ -27,7 +28,10 @@ const DynamicNavigationHeader = () => {
   const megaMenuRef = useRef(null);
   const navRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const { cartCount } = useCart();
+  
 
+  console.log("Cart Count:", cartCount);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname(); // 🔄 Detect route change
@@ -43,14 +47,9 @@ const DynamicNavigationHeader = () => {
     window.location.href = "/login"; // Or use router.push("/login")
   };
 
-
-
-
-
-
-
   useEffect(() => {
     fetchCategories();
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -248,38 +247,40 @@ const DynamicNavigationHeader = () => {
             <div className="flex space-x-4 items-center">
               <Heart className="w-4 h-4 cursor-pointer hover:text-gray-800" />
               {isLoggedIn ? (
-              <div className="relative group">
-                <User className="w-4 h-4 cursor-pointer hover:text-gray-800" />
-                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                <Link
-                  href="/profile"
-                  className="block px-4 py-2 text-sm hover:bg-gray-100"
-                >
-                  My Account
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                >
-                  Logout
-                </button>
+                <div className="relative group">
+                  <User className="w-4 h-4 cursor-pointer hover:text-gray-800" />
+                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm hover:bg-gray-100"
+                    >
+                      My Account
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 </div>
-              </div>
               ) : (
-              <Link
-                href="/login"
-                className="px-3 py-1 rounded border border-gray-300 text-sm hover:bg-gray-100 transition"
-              >
-                Login
-              </Link>
+                <Link
+                  href="/login"
+                  className="px-3 py-1 rounded border border-gray-300 text-sm hover:bg-gray-100 transition"
+                >
+                  Login
+                </Link>
               )}
 
               <Link href="/cart" className="relative">
-              <ShoppingBag className="w-4 h-4 cursor-pointer hover:text-gray-800" />
-              {/* Cart count badge */}
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
-                {typeof window !== "undefined" && (JSON.parse(localStorage.getItem("cart") || "[]").length || 0)}
-              </span>
+                <ShoppingBag className="w-4 h-4 cursor-pointer hover:text-gray-800" />
+                {/* Cart count badge */}
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
             </div>
           </div>

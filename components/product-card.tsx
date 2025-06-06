@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Heart, ShoppingBag, Eye } from "lucide-react";
+import { useCart } from "@/hooks/CartContext";
+
+
 
 interface ProductAttribute {
   id: number;
@@ -45,10 +48,13 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+     const token = Cookies.get("token");
+
   const router = useRouter();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(false);
+ const { fetchCartCount } = useCart();
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -67,7 +73,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setLoading(true);
-    const token = Cookies.get("token");
+ 
 
     try {
       // Check if token exists
@@ -109,35 +115,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           },
         }
       );
-
-      if (response.data) {
-
-        // Merge new cart data with existing cart in localStorage
-        const existingCart = localStorage.getItem("cart");
-        let mergedCart;
-
-        if (existingCart) {
-          try {
-            const parsedCart = JSON.parse(existingCart);
-            // If the cart is an array, merge arrays; otherwise, fallback to new data
-            if (Array.isArray(parsedCart) && Array.isArray(response.data)) {
-              mergedCart = [...parsedCart, ...response.data];
-            } else if (Array.isArray(parsedCart)) {
-              mergedCart = [...parsedCart, response.data];
-            } else if (Array.isArray(response.data)) {
-              mergedCart = [parsedCart, ...response.data];
-            } else {
-              mergedCart = [parsedCart, response.data];
-            }
-          } catch {
-            mergedCart = response.data;
-          }
-        } else {
-          mergedCart = response.data;
-        }
-
-        localStorage.setItem("cart", JSON.stringify(mergedCart));
-        
+      
+      await fetchCartCount(); // ✅ refresh count globally
+      if (response.data) { 
         router.push("/cart");
       } else {
         console.error("Add to cart failed:", response.data);
@@ -243,7 +223,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               disabled={loading}
               className="w-full bg-black hover:bg-gray-800 text-white rounded-none text-xs h-9 uppercase tracking-wide"
             >
-              {loading ? "Adding..." : "Add to Bag"}
+              {loading ? "Adding..." : "Add to Cart"}
             </Button>
           </div>
         </CardContent>

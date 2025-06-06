@@ -22,6 +22,7 @@ import {
   Truck,
   Shield,
 } from "lucide-react";
+import { useCart } from "@/hooks/CartContext";
 
 interface CartItem {
   cartItemId: number;
@@ -67,6 +68,7 @@ export default function CartPage() {
   const [appliedPromo, setAppliedPromo] = useState("");
   const [discount, setDiscount] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
+   const { fetchCartCount } = useCart();
 
   const token = Cookies.get("token");
 
@@ -157,10 +159,12 @@ export default function CartPage() {
       }
 
       await fetchCartItems();
+      await fetchCartCount(); // Update cart count after quantity change
     } catch (err) {
       console.error("Error updating quantity:", err);
       setError("Failed to update quantity. Please try again.");
       await fetchCartItems();
+      // Re-fetch cart items to ensure data consistency
     } finally {
       setIsUpdating(false);
     }
