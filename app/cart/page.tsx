@@ -402,7 +402,7 @@ export default function CartPage() {
                                   )
                                 }
                                 className="w-8 h-8 rounded-none border-r border-gray-300"
-                                disabled={item.quantity <= 1 || isUpdating}
+                                disabled={item.quantity <= 0 || isUpdating}
                               >
                                 <Minus className="w-3 h-3" />
                               </Button>
