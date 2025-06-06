@@ -242,12 +242,10 @@ export default function CartPage() {
 
   if (loading && !cartData) {
     return (
-      <div className="min-h-screen bg-brand-whisper pt-8 flex items-center justify-center">
+      <div className="min-h-screen pt-8 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="font-playfair text-2xl text-brand-maroon mb-4">
-            Loading your sacred collection...
-          </h1>
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-gold mx-auto"></div>
+          <h1 className="text-2xl mb-4">Loading your collection...</h1>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mx-auto"></div>
         </div>
       </div>
     );
@@ -255,15 +253,13 @@ export default function CartPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-brand-whisper pt-8 flex items-center justify-center">
+      <div className="min-h-screen pt-8 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <h1 className="font-playfair text-2xl text-brand-maroon mb-4">
-            Error loading your cart
-          </h1>
+          <h1 className="text-2xl mb-4">Error loading your cart</h1>
           <p className="text-gray-600 mb-6">{error}</p>
           <Button
             onClick={fetchCartItems}
-            className="bg-brand-maroon hover:bg-brand-maroon/90 text-white"
+            className="bg-black hover:bg-gray-800 text-white"
           >
             Try Again
           </Button>
@@ -274,7 +270,7 @@ export default function CartPage() {
 
   if (!cartData || cartData.items.length === 0) {
     return (
-      <div className="min-h-screen bg-brand-whisper pt-8">
+      <div className="min-h-screen pt-8">
         <div className="max-w-4xl mx-auto px-4 py-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -282,17 +278,14 @@ export default function CartPage() {
             transition={{ duration: 0.6 }}
           >
             <ShoppingBag className="w-24 h-24 text-gray-400 mx-auto mb-6" />
-            <h1 className="font-playfair text-4xl font-bold text-brand-maroon mb-4">
-              Your Cart is Empty
-            </h1>
+            <h1 className="text-4xl font-bold mb-4">Your Cart is Empty</h1>
             <p className="text-lg text-gray-600 mb-8">
-              Discover our sacred collection and find the perfect scent for your
-              spiritual journey.
+              Discover our collection and find the perfect items for you.
             </p>
             <Link href="/shop">
               <Button
                 size="lg"
-                className="bg-white border border-black text-black px-8 py-4 text-lg font-medium rounded-full"
+                className="bg-black text-white px-8 py-4 text-lg font-medium rounded-none"
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Continue Shopping
@@ -313,21 +306,20 @@ export default function CartPage() {
     cartData.otherCharges.deliveryFee;
 
   return (
-    <div className="min-h-screen bg-brand-whisper pt-8">
+    <div className="min-h-screen pt-8 bg-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-playfair text-4xl font-bold text-brand-maroon mb-2">
-              Shopping Cart
-            </h1>
+            <h1 className="text-3xl font-bold mb-2">Your Shopping Bag</h1>
             <p className="text-gray-600">
-              {cartData.summary.totalItems} items in your sacred collection
+              {cartData.summary.totalItems}{" "}
+              {cartData.summary.totalItems === 1 ? "item" : "items"}
             </p>
           </div>
           <Link href="/shop">
             <Button
               variant="outline"
-              className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10"
+              className="border-black text-black hover:bg-gray-100 rounded-none"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Continue Shopping
@@ -336,7 +328,7 @@ export default function CartPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-6">
             {cartData.items.map((item, index) => (
               <motion.div
                 key={item.cartItemId}
@@ -344,239 +336,228 @@ export default function CartPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-6">
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                        <Image
-                          src={
-                            `${process.env.NEXT_PUBLIC_API_URL_IMG}${item.images[0]}` ||
-                            "/placeholder.svg"
-                          }
-                          alt={item.productName}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
+                <div className="flex flex-col md:flex-row gap-6 pb-6 border-b">
+                  <div className="w-full md:w-48 flex-shrink-0">
+                    <div className="relative w-full aspect-square">
+                      <Image
+                        src={
+                          `${process.env.NEXT_PUBLIC_API_URL_IMG}${item.images[0]}` ||
+                          "/placeholder.svg"
+                        }
+                        alt={item.productName}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="flex flex-col h-full">
+                      <div className="flex justify-between">
+                        <div>
+                          <Link href={`/product/${item.productSlug}`}>
+                            <h3 className="text-lg font-medium mb-1 hover:underline">
+                              {item.productName}
+                            </h3>
+                          </Link>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {item.sku}
+                          </p>
+
+                          {item.attributes.length > 0 && (
+                            <div className="mb-3">
+                              {item.attributes.map((attr, idx) => (
+                                <p key={idx} className="text-sm text-gray-600">
+                                  {attr.name}: {attr.value}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeItem(item.variantId)}
+                          className="text-gray-400 hover:text-black self-start"
+                          disabled={isUpdating}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
 
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <Link href={`/product/${item.productSlug}`}>
-                              <h3 className="font-playfair text-lg font-semibold text-brand-maroon mb-1 hover:underline">
-                                {item.productName}
-                              </h3>
-                            </Link>
-                            <Badge
-                              variant="outline"
-                              className="border-brand-gold text-brand-maroon text-xs"
-                            >
-                              {item.sku}
-                            </Badge>
-
-                            {item.attributes.length > 0 && (
-                              <div className="mt-1 flex gap-2 flex-wrap">
-                                {item.attributes.map((attr, idx) => (
-                                  <Badge
-                                    key={idx}
-                                    variant="outline"
-                                    className="text-xs"
-                                  >
-                                    {attr.name}: {attr.value}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className="text-xl font-bold text-brand-maroon">
-                                ₹{item.price.toLocaleString()}
+                      <div className="mt-auto">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <span className="text-sm">Quantity:</span>
+                            <div className="flex items-center border border-gray-300">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.cartItemId,
+                                    item.quantity - 1
+                                  )
+                                }
+                                className="w-8 h-8 rounded-none border-r border-gray-300"
+                                disabled={item.quantity <= 1 || isUpdating}
+                              >
+                                <Minus className="w-3 h-3" />
+                              </Button>
+                              <span className="w-8 text-center text-sm">
+                                {item.quantity}
                               </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.cartItemId,
+                                    item.quantity + 1
+                                  )
+                                }
+                                className="w-8 h-8 rounded-none border-l border-gray-300"
+                                disabled={isUpdating}
+                              >
+                                <Plus className="w-3 h-3" />
+                              </Button>
                             </div>
                           </div>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeItem(item.variantId)}
-                            className="text-gray-400 hover:text-red-500"
-                            disabled={isUpdating}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-4">
-                          <div className="flex items-center gap-3">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.cartItemId,
-                                  item.quantity - 1
-                                )
-                              }
-                              className="w-8 h-8"
-                              disabled={item.quantity <= 0 || isUpdating}
-                            >
-                              <Minus className="w-3 h-3" />
-                            </Button>
-                            <span className="w-8 text-center font-medium">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() =>
-                                updateQuantity(
-                                  item.cartItemId,
-                                  item.quantity + 1
-                                )
-                              }
-                              className="w-8 h-8"
-                              disabled={isUpdating}
-                            >
-                              <Plus className="w-3 h-3" />
-                            </Button>
-                          </div>
-
                           <div className="text-right">
-                            <p className="text-lg font-bold text-brand-maroon">
+                            <p className="text-lg font-medium">
                               ₹{(item.price * item.quantity).toLocaleString()}
                             </p>
+                            {item.quantity > 1 && (
+                              <p className="text-sm text-gray-600">
+                                ₹{item.price.toLocaleString()} each
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
 
           <div className="space-y-6">
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <h3 className="font-playfair text-lg font-semibold text-brand-maroon mb-4">
-                  Promo Code
-                </h3>
-                {appliedPromo ? (
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-700 font-medium">
-                        {appliedPromo} Applied!
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={removePromoCode}
-                        className="text-green-700 hover:text-green-800 p-1 h-auto"
-                      >
-                        (Remove)
-                      </Button>
-                    </div>
-                    <span className="text-green-700 font-bold">
-                      -{discount}%
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter promo code"
-                      value={promoCode}
-                      onChange={(e) =>
-                        setPromoCode(e.target.value.toUpperCase())
-                      }
-                      disabled={isUpdating}
-                    />
-                    <Button
-                      onClick={applyPromoCode}
-                      variant="outline"
-                      className="border-brand-gold text-brand-maroon"
-                      disabled={!promoCode || isUpdating}
-                    >
-                      Apply
-                    </Button>
+            <div className="border p-6">
+              <h3 className="text-lg font-medium mb-4">Order Summary</h3>
+
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>₹{cartData.summary.subtotal.toLocaleString()}</span>
+                </div>
+
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount ({discount}%)</span>
+                    <span>-₹{discountAmount.toLocaleString()}</span>
                   </div>
                 )}
-                <div className="mt-3 text-sm text-gray-600">
-                  <p>Try: WELCOME10, SACRED15, ZODIAC20</p>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <h3 className="font-playfair text-lg font-semibold text-brand-maroon mb-4">
-                  Order Summary
-                </h3>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span>₹{cartData.summary.subtotal.toLocaleString()}</span>
-                  </div>
-
-                  {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({discount}%)</span>
-                      <span>-₹{discountAmount.toLocaleString()}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Platform Fee</span>
-                    <span>
-                      ₹{cartData.otherCharges.plateformfee.toLocaleString()}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>GST</span>
-                    <span>₹{cartData.otherCharges.gst.toLocaleString()}</span>
-                  </div>
-
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Delivery Fee</span>
-                    <span>
-                      ₹{cartData.otherCharges.deliveryFee.toLocaleString()}
-                    </span>
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex justify-between text-lg font-bold text-brand-maroon">
-                    <span>Total</span>
-                    <span>₹{finalTotal.toLocaleString()}</span>
-                  </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Platform Fee</span>
+                  <span>
+                    ₹{cartData.otherCharges.plateformfee.toLocaleString()}
+                  </span>
                 </div>
 
-                <Button
-                  className="w-full mt-6 bg-white border border-black hover:bg-brand-gold text-black py-3 text-lg font-medium rounded-full"
-                  disabled={isUpdating}
-                  onClick={handleCheckout}
-                >
-                  {isUpdating ? "Processing..." : "Proceed to Checkout"}
-                </Button>
-
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Truck className="w-4 h-4 text-brand-gold" />
-                    <span>Free shipping on orders over ₹2,000</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Shield className="w-4 h-4 text-brand-gold" />
-                    <span>30-day satisfaction guarantee</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <Gift className="w-4 h-4 text-brand-gold" />
-                    <span>Blessed with sacred intentions</span>
-                  </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>GST</span>
+                  <span>₹{cartData.otherCharges.gst.toLocaleString()}</span>
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Delivery Fee</span>
+                  <span>
+                    ₹{cartData.otherCharges.deliveryFee.toLocaleString()}
+                  </span>
+                </div>
+
+                <Separator className="my-2" />
+
+                <div className="flex justify-between text-lg font-medium">
+                  <span>Total</span>
+                  <span>₹{finalTotal.toLocaleString()}</span>
+                </div>
+
+                <div className="pt-4">
+                  <Button
+                    className="w-full bg-black text-white py-3 text-lg font-medium rounded-none hover:bg-gray-800"
+                    disabled={isUpdating}
+                    onClick={handleCheckout}
+                  >
+                    {isUpdating ? "Processing..." : "Proceed to Checkout"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="border p-6">
+              <h3 className="text-lg font-medium mb-4">Promo Code</h3>
+              {appliedPromo ? (
+                <div className="flex items-center justify-between p-3 bg-gray-100">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{appliedPromo} Applied!</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={removePromoCode}
+                      className="text-gray-600 hover:text-black p-1 h-auto"
+                    >
+                      (Remove)
+                    </Button>
+                  </div>
+                  <span className="font-medium">-{discount}%</span>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    disabled={isUpdating}
+                    className="rounded-none"
+                  />
+                  <Button
+                    onClick={applyPromoCode}
+                    variant="outline"
+                    className="border-black text-black rounded-none hover:bg-gray-100"
+                    disabled={!promoCode || isUpdating}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              )}
+              <div className="mt-3 text-sm text-gray-600">
+                <p>Try: WELCOME10, SACRED15, ZODIAC20</p>
+              </div>
+            </div>
+
+            <div className="border p-6">
+              <h3 className="text-lg font-medium mb-4">Services</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <Truck className="w-4 h-4" />
+                  <span>Free shipping on orders over ₹2,000</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <Shield className="w-4 h-4" />
+                  <span>30-day satisfaction guarantee</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <Gift className="w-4 h-4" />
+                  <span>Gift wrapping available</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
