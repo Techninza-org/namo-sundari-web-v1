@@ -14,7 +14,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Filter, Grid, List, ChevronDown, ChevronUp } from "lucide-react";
+import { Filter, Grid, List } from "lucide-react";
 import ProductCard from "@/components/product-card";
 import Image from "next/image";
 
@@ -66,7 +66,6 @@ export default function ShopPage() {
   const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [expandedFilter, setExpandedFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -78,6 +77,14 @@ export default function ShopPage() {
         if (data.success) {
           setAllProducts(data.data);
           setProducts(data.data);
+
+          // Find max price for price range
+          if (data.data.length > 0) {
+            const maxPrice = Math.max(
+              ...data.data.map((p) => parseFloat(p.variants[0].price))
+            );
+            setPriceRange([0, Math.ceil(maxPrice / 1000) * 1000]);
+          }
         }
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -127,6 +134,7 @@ export default function ShopPage() {
         filtered.sort((a, b) => b.id - a.id);
         break;
       default:
+        // featured - no sorting or custom sorting
         break;
     }
 
@@ -138,10 +146,6 @@ export default function ShopPage() {
       filterProducts();
     }
   }, [selectedCategory, selectedFragrance, priceRange, sortBy, allProducts]);
-
-  const toggleFilter = (filterName: string) => {
-    setExpandedFilter(expandedFilter === filterName ? null : filterName);
-  };
 
   if (loading) {
     return (
@@ -158,22 +162,27 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Banner */}
-      <div className="relative h-[400px] w-full">
-        <Image
-          src="/fragrance-banner.jpg"
-          alt="Luxury Fragrances"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-          <div className="text-center text-white max-w-2xl px-4">
-            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 tracking-wide">
+      <div className="grid grid-cols-1 md:grid-cols-2 h-[400px] w-full bg-yellow-50 text-black border">
+        {/* Image Column */}
+        <div className="relative h-full w-full">
+          <Image
+            src="/group1.jpg"
+            alt="Luxury Fragrances"
+            fill
+            className="ml-4"
+            priority
+          />
+        </div>
+
+        {/* Text Column */}
+        <div className="flex items-center justify-center bg-brand-cream px-8">
+          <div className="max-w-lg text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 leading-tight tracking-wide">
               Luxury Fragrances
             </h1>
-            <p className="text-lg md:text-xl font-light">
+            <p className="text-lg md:text-xl font-light text-gray-800 mb-6">
               Discover our exquisite collection of perfumes crafted with the
-              finest ingredients
+              finest ingredients.
             </p>
           </div>
         </div>
@@ -193,115 +202,88 @@ export default function ShopPage() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar - Desktop */}
+          {/* Filters Sidebar - Always visible on desktop, toggleable on mobile */}
           <div
             className={`${showFilters ? "block" : "hidden lg:block"} lg:w-72`}
           >
             <div className="space-y-6">
               <div className="border-b border-gray-200 pb-4">
-                <button
-                  className="flex justify-between items-center w-full text-left"
-                  onClick={() => toggleFilter("category")}
-                >
-                  <span className="font-serif font-medium text-lg">
-                    Perfume Type
-                  </span>
-                  {expandedFilter === "category" ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </button>
-                {expandedFilter === "category" && (
-                  <div className="mt-4 space-y-2">
-                    {categories.map((category) => (
-                      <div key={category} className="flex items-center">
-                        <Checkbox
-                          id={category}
-                          checked={selectedCategory === category}
-                          onCheckedChange={() => setSelectedCategory(category)}
-                          className="mr-2"
-                        />
-                        <Label htmlFor={category} className="text-sm">
-                          {category}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="border-b border-gray-200 pb-4">
-                <button
-                  className="flex justify-between items-center w-full text-left"
-                  onClick={() => toggleFilter("fragrance")}
-                >
-                  <span className="font-serif font-medium text-lg">
-                    Fragrance Notes
-                  </span>
-                  {expandedFilter === "fragrance" ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </button>
-                {expandedFilter === "fragrance" && (
-                  <div className="mt-4 space-y-2">
-                    {fragranceNotes.map((note) => (
-                      <div key={note} className="flex items-center">
-                        <Checkbox
-                          id={`note-${note}`}
-                          checked={selectedFragrance === note}
-                          onCheckedChange={() => setSelectedFragrance(note)}
-                          className="mr-2"
-                        />
-                        <Label htmlFor={`note-${note}`} className="text-sm">
-                          {note}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="border-b border-gray-200 pb-4">
-                <button
-                  className="flex justify-between items-center w-full text-left"
-                  onClick={() => toggleFilter("price")}
-                >
-                  <span className="font-serif font-medium text-lg">
-                    Price Range
-                  </span>
-                  {expandedFilter === "price" ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </button>
-                {expandedFilter === "price" && (
-                  <div className="mt-4 space-y-4">
-                    <Slider
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                      max={10000}
-                      min={0}
-                      step={500}
-                    />
-                    <div className="flex justify-between text-sm">
-                      <span>₹{priceRange[0]}</span>
-                      <span>₹{priceRange[1]}</span>
+                <h3 className="font-serif font-medium text-lg mb-4">
+                  Perfume Type
+                </h3>
+                <div className="space-y-2">
+                  {categories.map((category) => (
+                    <div key={category} className="flex items-center">
+                      <Checkbox
+                        id={category}
+                        checked={selectedCategory === category}
+                        onCheckedChange={() => setSelectedCategory(category)}
+                        className="mr-2"
+                      />
+                      <Label htmlFor={category} className="text-sm">
+                        {category}
+                      </Label>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-b border-gray-200 pb-4">
+                <h3 className="font-serif font-medium text-lg mb-4">
+                  Fragrance Notes
+                </h3>
+                <div className="space-y-2">
+                  {fragranceNotes.map((note) => (
+                    <div key={note} className="flex items-center">
+                      <Checkbox
+                        id={`note-${note}`}
+                        checked={selectedFragrance === note}
+                        onCheckedChange={() => setSelectedFragrance(note)}
+                        className="mr-2"
+                      />
+                      <Label htmlFor={`note-${note}`} className="text-sm">
+                        {note}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-b border-gray-200 pb-4">
+                <h3 className="font-serif font-medium text-lg mb-4">
+                  Price Range
+                </h3>
+                <div className="space-y-4">
+                  <Slider
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    max={priceRange[1] > 10000 ? priceRange[1] : 10000}
+                    min={0}
+                    step={500}
+                  />
+                  <div className="flex justify-between text-sm">
+                    <span>₹{priceRange[0].toLocaleString()}</span>
+                    <span>₹{priceRange[1].toLocaleString()}</span>
                   </div>
-                )}
+                </div>
               </div>
 
               <Button
                 variant="ghost"
-                className="text-black hover:bg-gray-100"
+                className="text-black hover:bg-gray-100 w-full"
                 onClick={() => {
                   setSelectedCategory("All");
                   setSelectedFragrance("All");
-                  setPriceRange([0, 50000]);
+                  // Reset to default or calculated max price
+                  const maxPrice =
+                    allProducts.length > 0
+                      ? Math.max(
+                          ...allProducts.map((p) =>
+                            parseFloat(p.variants[0].price)
+                          )
+                        )
+                      : 50000;
+                  setPriceRange([0, Math.ceil(maxPrice / 1000) * 1000]);
                 }}
               >
                 Reset All Filters
@@ -314,7 +296,8 @@ export default function ShopPage() {
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <p className="text-gray-600 font-light">
-                Showing {products.length} products
+                Showing {products.length}{" "}
+                {products.length === 1 ? "product" : "products"}
               </p>
 
               <div className="flex items-center gap-4">
@@ -372,6 +355,7 @@ export default function ShopPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="relative group"
                   >
                     <ProductCard
                       product={{
@@ -388,6 +372,7 @@ export default function ShopPage() {
                       }}
                       onAddToCart={() => {}}
                       variant={viewMode === "list" ? "list" : "grid"}
+                      showAddToCartOnHover={true}
                     />
                   </motion.div>
                 ))}
@@ -401,7 +386,15 @@ export default function ShopPage() {
                   onClick={() => {
                     setSelectedCategory("All");
                     setSelectedFragrance("All");
-                    setPriceRange([0, 50000]);
+                    const maxPrice =
+                      allProducts.length > 0
+                        ? Math.max(
+                            ...allProducts.map((p) =>
+                              parseFloat(p.variants[0].price)
+                            )
+                          )
+                        : 50000;
+                    setPriceRange([0, Math.ceil(maxPrice / 1000) * 1000]);
                   }}
                   className="bg-black hover:bg-gray-800 text-white rounded-none"
                 >
