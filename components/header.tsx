@@ -185,14 +185,14 @@ const DynamicNavigationHeader = () => {
       <div className="hidden lg:block">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center text-xs">
           <div className="flex space-x-4">
-            <Link href="#" className="hover:text-gray-800 transition-colors">
-              UNITED STATES
+            <Link href="#" className="hover:text-gray-800 transition-colors uppercase">
+              Holistic WELLNESS
             </Link>
-            <Link href="#" className="hover:text-gray-800 transition-colors">
-              CONTACT US
+            <Link href="#" className="hover:text-gray-800 transition-colors uppercase">
+             gifting
             </Link>
-            <Link href="#" className="hover:text-gray-800 transition-colors">
-              SERVICES
+            <Link href="#" className="hover:text-gray-800 transition-colors uppercase">
+             certificates
             </Link>
           </div>
             
@@ -321,6 +321,16 @@ const DynamicNavigationHeader = () => {
       <nav className="hidden lg:block border-b border-gray-200" ref={navRef}>
         <div className="container mx-auto px-4">
           <ul className="flex justify-center space-x-8">
+            <li className="py-4">
+              <Link href="/" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+                HOME
+              </Link>
+            </li>
+            <li className="py-4">
+              <Link href="/shop" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+                SHOP
+              </Link>
+            </li>
             {categories.map((category) => (
               <li
                 key={category.id}
@@ -351,6 +361,18 @@ const DynamicNavigationHeader = () => {
                 />
               </li>
             ))}
+            <li className="py-4">
+              <Link href="/about" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+                ABOUT US
+              </Link>
+            </li>
+            <li className="py-4">
+              <Link href="/contact" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+                CONTACT US
+              </Link>
+            </li>
+           
+
           </ul>
         </div>
       </nav>
@@ -366,7 +388,7 @@ const DynamicNavigationHeader = () => {
             animation: "fadeIn 0.2s ease-out",
           }}
         >
-          <div className="container mx-auto px-8 py-8">
+          <div className="container w-[80%] mx-auto px-8 py-8">
             <div className="grid grid-cols-4 gap-8">
               {subCategories[hoveredItemId].map((sub) => (
                 <Link 
@@ -379,10 +401,10 @@ const DynamicNavigationHeader = () => {
                       <img
                         src={`${process.env.NEXT_PUBLIC_API_URL_IMG}${sub.imgUrl}`}
                         alt={sub.name}
-                        className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="w-32 h-32 object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
+                      <div className="w-32 h-32 bg-gray-100 flex items-center justify-center">
                         <span className="text-gray-400">No Image</span>
                       </div>
                     )}
