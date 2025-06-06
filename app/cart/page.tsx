@@ -68,7 +68,7 @@ export default function CartPage() {
   const [appliedPromo, setAppliedPromo] = useState("");
   const [discount, setDiscount] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
-   const { fetchCartCount } = useCart();
+  const { fetchCartCount } = useCart();
 
   const token = Cookies.get("token");
 
@@ -323,7 +323,7 @@ export default function CartPage() {
           <Link href="/shop">
             <Button
               variant="outline"
-              className="border-black text-black hover:bg-gray-100 rounded-none"
+              className="border-black text-black hover:bg-black hover:text-white rounded-none"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Continue Shopping
@@ -494,7 +494,7 @@ export default function CartPage() {
 
                 <div className="pt-4">
                   <Button
-                    className="w-full bg-black text-white py-3 text-lg font-medium rounded-none hover:bg-gray-800"
+                    className="w-full bg-white text-black py-3 text-lg font-medium rounded-none hover:bg-black hover:text-white border border-black"
                     disabled={isUpdating}
                     onClick={handleCheckout}
                   >

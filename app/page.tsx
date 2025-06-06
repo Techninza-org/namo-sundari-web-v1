@@ -283,7 +283,7 @@ export default function HomePage() {
             <Link href="/shop">
               <Button
                 variant="outline"
-                className="border-brand-brown text-brand-brown hover:bg-brand-brown/5 px-8 py-6 text-base font-medium rounded-md"
+                className="border-brand-brown text-brand-brown px-8 py-6 font-medium rounded-md"
               >
                 View All Products
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -404,7 +404,7 @@ export default function HomePage() {
             <Link href="/shop">
               <Button
                 variant="outline"
-                className="border-brand-brown text-brand-brown hover:bg-brand-brown/5 px-8 py-6 text-base font-medium rounded-md"
+                className="border-brand-brown text-brand-brow px-8 py-6 font-medium rounded-md"
               >
                 View All Products
                 <ArrowRight className="w-5 h-5 ml-2" />

@@ -540,13 +540,13 @@ export default function ProfilePage() {
                   <Package className="w-4 h-4" />
                   Orders
                 </TabsTrigger>
-                <TabsTrigger
+                {/* <TabsTrigger
                   value="wishlist"
                   className="flex items-center gap-2 data-[state=active]:bg-brand-maroon data-[state=active]:text-amber-800 data-[state=active]:shadow-lg py-3"
                 >
                   <Heart className="w-4 h-4" />
                   Wishlist
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger
                   value="addresses"
                   className="flex items-center gap-2 data-[state=active]:bg-brand-maroon data-[state=active]:text-amber-800 data-[state=active]:shadow-lg py-3"
@@ -768,7 +768,7 @@ export default function ProfilePage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10"
+                                    className="border-brand-gold text-brand-maroon hover:bg-black hover:text-white"
                                     onClick={() =>
                                       handleViewOrderDetails(order.id)
                                     }
@@ -776,14 +776,14 @@ export default function ProfilePage() {
                                     <Eye className="w-4 h-4 mr-2" />
                                     View Details
                                   </Button>
-                                  <Button
+                                  {/* <Button
                                     variant="outline"
                                     size="sm"
-                                    className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10"
+                                    className="border-brand-gold text-brand-maroon hover:bg-black hover:text-white"
                                   >
                                     <Download className="w-4 h-4 mr-2" />
                                     Invoice
-                                  </Button>
+                                  </Button> */}
                                 </div>
                               </CardContent>
                             </Card>
@@ -796,7 +796,7 @@ export default function ProfilePage() {
               </TabsContent>
 
               {/* Wishlist Tab */}
-              <TabsContent value="wishlist">
+              {/* <TabsContent value="wishlist">
                 <Card className="border border-brand-gold/20 bg-white/90 backdrop-blur-sm shadow-lg rounded-xl">
                   <CardContent className="p-8">
                     <h3 className="font-playfair text-2xl font-semibold text-brand-maroon mb-8">
@@ -881,7 +881,7 @@ export default function ProfilePage() {
                     )}
                   </CardContent>
                 </Card>
-              </TabsContent>
+              </TabsContent> */}
 
               {/* Addresses Tab */}
               <TabsContent value="addresses">
@@ -1083,18 +1083,18 @@ export default function ProfilePage() {
                                   {address.pincode}
                                 </p>
                                 <div className="flex gap-3">
-                                  <Button
+                                  {/* <Button
                                     variant="outline"
                                     size="sm"
                                     className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10"
                                   >
                                     <Edit className="w-4 h-4 mr-2" />
                                     Edit
-                                  </Button>
+                                  </Button> */}
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="border-brand-gold text-brand-maroon hover:bg-brand-gold/10"
+                                    className="border-brand-gold text-brand-maroon hover:bg-black hover:text-white"
                                     onClick={async () => {
                                       try {
                                         const response = await fetch(

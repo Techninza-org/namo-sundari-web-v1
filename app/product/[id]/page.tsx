@@ -425,7 +425,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Wishlist */}
-            <div className="mb-12">
+            {/* <div className="mb-12">
               <Button
                 variant="outline"
                 onClick={() => setIsWishlisted(!isWishlisted)}
@@ -438,7 +438,7 @@ export default function ProductDetailPage() {
                 />
                 {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
               </Button>
-            </div>
+            </div> */}
 
             {/* Product Details Accordion */}
             <div className="border-t border-gray-200 pt-6">
@@ -516,7 +516,7 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Reviews */}
-        <div className="my-16 border-t border-gray-200 pt-12">
+        {/* <div className="my-16 border-t border-gray-200 pt-12">
           <div className="flex justify-between items-center mb-8">
             <h2 className="font-serif text-2xl font-normal text-gray-900">
               Customer Reviews
@@ -573,7 +573,7 @@ export default function ProductDetailPage() {
               </Button>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
@@ -582,7 +582,7 @@ export default function ProductDetailPage() {
               You May Also Like
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {relatedProducts.slice(0, 4).map((relatedProduct) => (
+              {relatedProducts.slice(4, 8).map((relatedProduct) => (
                 <ProductCard
                   key={relatedProduct.id}
                   product={{

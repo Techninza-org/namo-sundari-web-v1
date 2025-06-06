@@ -29,7 +29,6 @@ const DynamicNavigationHeader = () => {
   const navRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const { cartCount } = useCart();
-  
 
   console.log("Cart Count:", cartCount);
 
@@ -204,19 +203,19 @@ const DynamicNavigationHeader = () => {
         <div className="container mx-auto px-4 py-3 flex justify-between items-center text-xs">
           <div className="flex space-x-4">
             <Link
-              href="#"
+              href="/wellness"
               className="hover:text-gray-800 transition-colors uppercase"
             >
               Holistic WELLNESS
             </Link>
             <Link
-              href="#"
+              href="/gifting"
               className="hover:text-gray-800 transition-colors uppercase"
             >
               gifting
             </Link>
             <Link
-              href="#"
+              href="/certificates"
               className="hover:text-gray-800 transition-colors uppercase"
             >
               certificates

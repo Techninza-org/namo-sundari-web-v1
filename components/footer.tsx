@@ -148,7 +148,7 @@ export default function Footer() {
             <ul className="space-y-2 text-xs md:text-sm">
               <li>
                 <a
-                  href="/terms-of-use"
+                  href="/terms"
                   className="text-gray-600 hover:text-red-600 transition-colors block"
                 >
                   Terms of Use
@@ -156,7 +156,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="/privacy-policy"
+                  href="/privacy"
                   className="text-gray-600 hover:text-red-600 transition-colors block"
                 >
                   Privacy Policy
