@@ -18,6 +18,7 @@ import { Filter, Grid, List } from "lucide-react";
 import ProductCard from "@/components/product-card";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 interface Product {
   id: number;
@@ -57,7 +58,7 @@ const fragranceNotes = [
   "Fresh",
 ];
 
-export default function ShopPage() {
+function ShopContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -78,12 +79,10 @@ export default function ShopPage() {
       try {
         let response;
         if (categoryFromQuery) {
-          // Fetch by category param
           response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/web/get-products-by-sub-category/${categoryFromQuery}`
           );
         } else {
-          // Fetch all products
           response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/web/get-all-products`
           );
@@ -95,7 +94,6 @@ export default function ShopPage() {
           setAllProducts(data.data);
           setProducts(data.data);
 
-          // Update price range
           if (data.data.length > 0) {
             const maxPrice = Math.max(
               ...data.data.map((p) => parseFloat(p.variants[0].price))
@@ -133,7 +131,6 @@ export default function ShopPage() {
       return price >= priceRange[0] && price <= priceRange[1];
     });
 
-    // Sort products
     switch (sortBy) {
       case "price-low":
         filtered.sort(
@@ -151,7 +148,6 @@ export default function ShopPage() {
         filtered.sort((a, b) => b.id - a.id);
         break;
       default:
-        // featured - no sorting or custom sorting
         break;
     }
 
@@ -219,7 +215,7 @@ export default function ShopPage() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar - Always visible on desktop, toggleable on mobile */}
+          {/* Filters Sidebar */}
           <div
             className={`${showFilters ? "block" : "hidden lg:block"} lg:w-72`}
           >
@@ -291,7 +287,6 @@ export default function ShopPage() {
                 onClick={() => {
                   setSelectedCategory("All");
                   setSelectedFragrance("All");
-                  // Reset to default or calculated max price
                   const maxPrice =
                     allProducts.length > 0
                       ? Math.max(
@@ -423,5 +418,13 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ShopContent />
+    </Suspense>
   );
 }
