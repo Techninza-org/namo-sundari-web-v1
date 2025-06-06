@@ -111,6 +111,33 @@ export default function ProductCard({ product }: ProductCardProps) {
       );
 
       if (response.data) {
+
+        // Merge new cart data with existing cart in localStorage
+        const existingCart = localStorage.getItem("cart");
+        let mergedCart;
+
+        if (existingCart) {
+          try {
+            const parsedCart = JSON.parse(existingCart);
+            // If the cart is an array, merge arrays; otherwise, fallback to new data
+            if (Array.isArray(parsedCart) && Array.isArray(response.data)) {
+              mergedCart = [...parsedCart, ...response.data];
+            } else if (Array.isArray(parsedCart)) {
+              mergedCart = [...parsedCart, response.data];
+            } else if (Array.isArray(response.data)) {
+              mergedCart = [parsedCart, ...response.data];
+            } else {
+              mergedCart = [parsedCart, response.data];
+            }
+          } catch {
+            mergedCart = response.data;
+          }
+        } else {
+          mergedCart = response.data;
+        }
+
+        localStorage.setItem("cart", JSON.stringify(mergedCart));
+        
         router.push("/cart");
       } else {
         console.error("Add to cart failed:", response.data);
