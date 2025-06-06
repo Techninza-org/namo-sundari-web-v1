@@ -133,91 +133,62 @@ export default function ProductCard({ product }: ProductCardProps) {
       className="product-card"
     >
       <Card
-        className="border border-brand-beige/50 rounded-lg overflow-hidden shadow-subtle hover:shadow-hover transition-all duration-300 bg-white cursor-pointer"
+        className="group border border-gray-200 shadow-none rounded-none bg-white cursor-pointer"
         onClick={handleCardClick}
       >
         <div className="relative">
-          {/* Product Image */}
-          <div className="relative aspect-square overflow-hidden bg-brand-cream/50">
-            <Image
-              src={product.image || "/placeholder.svg"}
-              alt={product.name}
-              width={300}
-              height={300}
-              className="object-cover w-full h-full"
-            />
-
-            {/* Overlay on hover */}
-            <div
-              className={`absolute inset-0 bg-black/10 flex items-center justify-center gap-3 transition-opacity duration-300 ${
-                isHovered ? "opacity-100" : "opacity-0"
-              }`}
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handleViewProduct}
-                className="bg-white hover:bg-white/90 text-brand-brown rounded-full w-10 h-10 p-0"
-              >
-                <Eye className="w-4 h-4" />
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleAddToCart}
-                disabled={loading}
-                className="bg-brand-brown hover:bg-brand-brown/90 text-white rounded-full w-10 h-10 p-0 btn-hover-effect"
-              >
-                <ShoppingBag className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.isNew && (
-              <Badge className="bg-brand-olive text-white text-xs font-medium px-2 py-1 rounded">
-                NEW
-              </Badge>
-            )}
-            {product.originalPrice && (
-              <Badge className="bg-brand-terracotta text-white text-xs font-medium px-2 py-1 rounded">
-                SALE
-              </Badge>
-            )}
-          </div>
-
-          {/* Wishlist */}
+          {/* Wishlist Button */}
           <Button
             size="sm"
             variant="ghost"
             onClick={handleWishlistToggle}
-            className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white"
+            className="absolute top-2 right-2 z-10 bg-white/80 hover:bg-white rounded-full p-1.5"
           >
             <Heart
               className={`w-4 h-4 transition-colors ${
                 isWishlisted
                   ? "fill-brand-terracotta text-brand-terracotta"
-                  : "text-brand-charcoal"
+                  : "text-gray-400"
               }`}
             />
           </Button>
+
+          {/* NEW & SALE Badges */}
+          <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+            {product.isNew && (
+              <Badge className="bg-brand-olive text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
+                NEW
+              </Badge>
+            )}
+            {product.originalPrice && (
+              <Badge className="bg-brand-terracotta text-white text-[10px] font-medium px-1.5 py-0.5 rounded">
+                SALE
+              </Badge>
+            )}
+          </div>
+
+          {/* Product Image - reduced height */}
+          <div className="w-full h-[250px] bg-white p-4 overflow-hidden">
+            <Image
+              src={product.image || "/placeholder.svg"}
+              alt={product.name}
+              width={400}
+              height={400}
+              className="object-contain w-full h-full"
+            />
+          </div>
         </div>
 
-        <CardContent className="p-5">
-          {/* Category */}
-          <p className="text-xs text-brand-brown font-medium mb-1 uppercase tracking-wide">
-            {product.category}
-          </p>
-
-          {/* Product Name */}
-          <h3 className="font-playfair text-base font-semibold text-brand-charcoal mb-1 line-clamp-2">
+        <CardContent className="px-4 pt-3 pb-4 text-left">
+          <h3 className="font-semibold text-xs md:text-sm text-black uppercase tracking-wide line-clamp-1">
             {product.name}
           </h3>
 
-          {/* Rating */}
-          <div className="flex items-center gap-1 mb-2">
+          <p className="text-xs text-gray-700 mb-1 line-clamp-1">
+            {product.description}
+          </p>
+
+          <div className="flex items-center gap-1 mb-1">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -230,30 +201,24 @@ export default function ProductCard({ product }: ProductCardProps) {
                 />
               ))}
             </div>
-            <span className="text-xs text-gray-500">({product.reviews})</span>
-          </div>
-
-          {/* Price */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-base font-bold text-brand-charcoal">
-              ₹{product.price.toLocaleString()}
+            <span className="text-[10px] text-gray-500">
+              ({product.reviews})
             </span>
-            {product.originalPrice && (
-              <span className="text-xs text-gray-500 line-through">
-                ₹{product.originalPrice.toLocaleString()}
-              </span>
-            )}
           </div>
 
-          {/* Add to Cart Button */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={loading}
-            className="w-full bg-brand-brown hover:bg-brand-brown/90 text-white rounded-md transition-all duration-300 btn-hover-effect text-sm h-9"
-          >
-            <ShoppingBag className="w-4 h-4 mr-2" />
-            {loading ? "Adding..." : "Add to Cart"}
-          </Button>
+          <p className="text-sm font-semibold text-black mb-3">
+            ₹{product.price.toLocaleString()}
+          </p>
+
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Button
+              onClick={handleAddToCart}
+              disabled={loading}
+              className="w-full bg-black hover:bg-gray-800 text-white rounded-none text-xs h-9 uppercase tracking-wide"
+            >
+              {loading ? "Adding..." : "Add to Bag"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </motion.div>

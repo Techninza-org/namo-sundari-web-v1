@@ -17,6 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { Filter, Grid, List } from "lucide-react";
 import ProductCard from "@/components/product-card";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 
 interface Product {
   id: number;
@@ -67,18 +68,34 @@ export default function ShopPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const searchParams = useSearchParams();
+  const categoryFromQuery = searchParams.get("category");
+
   useEffect(() => {
     const fetchProducts = async () => {
+      setLoading(true);
+
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/web/get-all-products`
-        );
+        let response;
+        if (categoryFromQuery) {
+          // Fetch by category param
+          response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/web/get-products-by-sub-category/${categoryFromQuery}`
+          );
+        } else {
+          // Fetch all products
+          response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/web/get-all-products`
+          );
+        }
+
         const data: ApiResponse = await response.json();
+
         if (data.success) {
           setAllProducts(data.data);
           setProducts(data.data);
 
-          // Find max price for price range
+          // Update price range
           if (data.data.length > 0) {
             const maxPrice = Math.max(
               ...data.data.map((p) => parseFloat(p.variants[0].price))
@@ -94,7 +111,7 @@ export default function ShopPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [categoryFromQuery]);
 
   const filterProducts = () => {
     let filtered = [...allProducts];

@@ -45,11 +45,11 @@ const DynamicNavigationHeader = () => {
       setHoveredItemId(null);
       setIsMegaMenuOpen(false);
     }
-    
+
     if (
       mobileMenuRef.current &&
       !mobileMenuRef.current.contains(event.target) &&
-      !event.target.closest('.mobile-menu-button')
+      !event.target.closest(".mobile-menu-button")
     ) {
       setIsMobileMenuOpen(false);
       setActiveMobileCategory(null);
@@ -154,27 +154,24 @@ const DynamicNavigationHeader = () => {
       {/* Mobile Top Bar */}
       <div className="lg:hidden">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <button 
-            className="mobile-menu-button p-2"
-            onClick={toggleMobileMenu}
-          >
+          <button className="mobile-menu-button p-2" onClick={toggleMobileMenu}>
             {isMobileMenuOpen ? (
               <X className="w-6 h-6" />
             ) : (
               <Menu className="w-6 h-6" />
             )}
           </button>
-          
+
           <div className="flex justify-center">
             <Link href="/">
-              <img 
-                src="/namo-logo.png" 
-                alt="Logo" 
+              <img
+                src="/namo-logo.png"
+                alt="Logo"
                 className="h-12 object-contain"
               />
             </Link>
           </div>
-          
+
           <div className="flex space-x-4 items-center">
             <ShoppingBag className="w-5 h-5 cursor-pointer hover:text-gray-800" />
           </div>
@@ -185,34 +182,43 @@ const DynamicNavigationHeader = () => {
       <div className="hidden lg:block">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center text-xs">
           <div className="flex space-x-4">
-            <Link href="#" className="hover:text-gray-800 transition-colors uppercase">
+            <Link
+              href="#"
+              className="hover:text-gray-800 transition-colors uppercase"
+            >
               Holistic WELLNESS
             </Link>
-            <Link href="#" className="hover:text-gray-800 transition-colors uppercase">
-             gifting
+            <Link
+              href="#"
+              className="hover:text-gray-800 transition-colors uppercase"
+            >
+              gifting
             </Link>
-            <Link href="#" className="hover:text-gray-800 transition-colors uppercase">
-             certificates
+            <Link
+              href="#"
+              className="hover:text-gray-800 transition-colors uppercase"
+            >
+              certificates
             </Link>
           </div>
-            
+
           <div className="w-1/3 flex justify-center">
             <Link href="/">
-              <img 
-                src="/namo-logo2.png" 
-                alt="Logo" 
+              <img
+                src="/namo-logo2.png"
+                alt="Logo"
                 className="h-16 object-contain"
               />
             </Link>
             <Link href="/">
-              <img 
-                src="/namo-logo.png" 
-                alt="Logo" 
+              <img
+                src="/namo-logo.png"
+                alt="Logo"
                 className="h-16 object-contain"
               />
             </Link>
           </div>
-          
+
           <div className="flex space-x-4 items-center">
             <Link href="#" className="hover:text-gray-800 transition-colors">
               STORE LOCATOR
@@ -243,7 +249,7 @@ const DynamicNavigationHeader = () => {
                 <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
               </div>
             </div>
-            
+
             <ul className="space-y-2">
               {categories.map((category) => (
                 <li key={category.id} className="border-b border-gray-100">
@@ -258,59 +264,72 @@ const DynamicNavigationHeader = () => {
                       }`}
                     />
                   </div>
-                  
-                  {activeMobileCategory === category.id && subCategories[category.id] && (
-                    <div className="pl-4 pb-2">
-                      <div className="grid grid-cols-2 gap-4">
-                        {subCategories[category.id].map((sub) => (
-                          <Link
-                            href={`/shop?category=${sub.slug}`}
-                            key={sub.id}
-                            className="block py-2"
-                            onClick={() => {
-                              setIsMobileMenuOpen(false);
-                              setActiveMobileCategory(null);
-                            }}
-                          >
-                            <div className="mb-2">
-                              {sub.imgUrl ? (
-                                <img
-                                  src={`${process.env.NEXT_PUBLIC_API_URL_IMG}${sub.imgUrl}`}
-                                  alt={sub.name}
-                                  className="w-full h-32 object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-32 bg-gray-100 flex items-center justify-center">
-                                  <span className="text-gray-400">No Image</span>
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-sm">{sub.name}</span>
-                          </Link>
-                        ))}
+
+                  {activeMobileCategory === category.id &&
+                    subCategories[category.id] && (
+                      <div className="pl-4 pb-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          {subCategories[category.id].map((sub) => (
+                            <Link
+                              href={`/shop?category=${sub.slug}`}
+                              key={sub.id}
+                              className="block py-2"
+                              onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                setActiveMobileCategory(null);
+                              }}
+                            >
+                              <div className="mb-2">
+                                {sub.imgUrl ? (
+                                  <img
+                                    src={`${process.env.NEXT_PUBLIC_API_URL_IMG}${sub.imgUrl}`}
+                                    alt={sub.name}
+                                    className="w-full h-32 object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-32 bg-gray-100 flex items-center justify-center">
+                                    <span className="text-gray-400">
+                                      No Image
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-sm">{sub.name}</span>
+                            </Link>
+                          ))}
+                        </div>
+                        <Link
+                          href={`/shop?category=${
+                            categories.find((c) => c.id === category.id)?.slug
+                          }`}
+                          className="block mt-4 text-sm font-medium text-center border-t border-gray-200 pt-3"
+                          onClick={() => {
+                            setIsMobileMenuOpen(false);
+                            setActiveMobileCategory(null);
+                          }}
+                        >
+                          View All {category.name}
+                        </Link>
                       </div>
-                      <Link
-                        href={`/shop?category=${categories.find(c => c.id === category.id)?.slug}`}
-                        className="block mt-4 text-sm font-medium text-center border-t border-gray-200 pt-3"
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          setActiveMobileCategory(null);
-                        }}
-                      >
-                        View All {category.name}
-                      </Link>
-                    </div>
-                  )}
+                    )}
                 </li>
               ))}
             </ul>
-            
+
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex flex-col space-y-3">
-                <Link href="#" className="py-2 px-2">My Account</Link>
-                <Link href="#" className="py-2 px-2">Wishlist</Link>
-                <Link href="#" className="py-2 px-2">Store Locator</Link>
-                <Link href="#" className="py-2 px-2">Contact Us</Link>
+                <Link href="#" className="py-2 px-2">
+                  My Account
+                </Link>
+                <Link href="#" className="py-2 px-2">
+                  Wishlist
+                </Link>
+                <Link href="#" className="py-2 px-2">
+                  Store Locator
+                </Link>
+                <Link href="#" className="py-2 px-2">
+                  Contact Us
+                </Link>
               </div>
             </div>
           </div>
@@ -322,12 +341,18 @@ const DynamicNavigationHeader = () => {
         <div className="container mx-auto px-4">
           <ul className="flex justify-center space-x-8">
             <li className="py-4">
-              <Link href="/" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+              <Link
+                href="/"
+                className="text-sm font-medium tracking-wider hover:text-black transition-colors"
+              >
                 HOME
               </Link>
             </li>
             <li className="py-4">
-              <Link href="/shop" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+              <Link
+                href="/shop"
+                className="text-sm font-medium tracking-wider hover:text-black transition-colors"
+              >
                 SHOP
               </Link>
             </li>
@@ -343,7 +368,9 @@ const DynamicNavigationHeader = () => {
                   <Link
                     href="#"
                     className={`text-sm font-medium tracking-wider hover:text-black transition-colors ${
-                      hoveredItemId === category.id ? "text-black" : "text-gray-700"
+                      hoveredItemId === category.id
+                        ? "text-black"
+                        : "text-gray-700"
                     }`}
                   >
                     {category.name.toUpperCase()}
@@ -362,17 +389,21 @@ const DynamicNavigationHeader = () => {
               </li>
             ))}
             <li className="py-4">
-              <Link href="/about" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+              <Link
+                href="/about"
+                className="text-sm font-medium tracking-wider hover:text-black transition-colors"
+              >
                 ABOUT US
               </Link>
             </li>
             <li className="py-4">
-              <Link href="/contact" className="text-sm font-medium tracking-wider hover:text-black transition-colors">
+              <Link
+                href="/contact"
+                className="text-sm font-medium tracking-wider hover:text-black transition-colors"
+              >
                 CONTACT US
               </Link>
             </li>
-           
-
           </ul>
         </div>
       </nav>
@@ -391,8 +422,8 @@ const DynamicNavigationHeader = () => {
           <div className="container w-[80%] mx-auto px-8 py-8">
             <div className="grid grid-cols-4 gap-8">
               {subCategories[hoveredItemId].map((sub) => (
-                <Link 
-                  href={`/shop?category=${sub.slug}`} 
+                <Link
+                  href={`/shop?category=${sub.id}`}
                   key={sub.id}
                   className="group"
                 >
@@ -415,13 +446,18 @@ const DynamicNavigationHeader = () => {
                 </Link>
               ))}
             </div>
-            
+
             <div className="mt-8 pt-8 border-t border-gray-200 text-center">
               <Link
-                href={`/shop?category=${categories.find(c => c.id === hoveredItemId)?.slug}`}
+                href={`/shop?category=${
+                  categories.find((c) => c.id === hoveredItemId)?.slug
+                }`}
                 className="inline-block text-sm font-medium text-gray-700 hover:text-black border-b border-transparent hover:border-black transition-all pb-1"
               >
-                VIEW ALL {categories.find(c => c.id === hoveredItemId)?.name.toUpperCase()}
+                VIEW ALL{" "}
+                {categories
+                  .find((c) => c.id === hoveredItemId)
+                  ?.name.toUpperCase()}
               </Link>
             </div>
           </div>
@@ -439,17 +475,17 @@ const DynamicNavigationHeader = () => {
             transform: translateY(0);
           }
         }
-        
+
         /* Prevent scrolling when mobile menu is open */
         body.mobile-menu-open {
           overflow: hidden;
         }
       `}</style>
-      
+
       {/* Add/remove body class when mobile menu opens/closes */}
       <style jsx global>{`
         body {
-          overflow: ${isMobileMenuOpen ? 'hidden' : 'auto'};
+          overflow: ${isMobileMenuOpen ? "hidden" : "auto"};
         }
       `}</style>
     </header>

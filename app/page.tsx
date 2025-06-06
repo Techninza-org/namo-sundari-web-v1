@@ -17,6 +17,7 @@ import {
 import ProductCard from "@/components/product-card";
 import ReviewCarousel from "@/components/review-carousel";
 import ScrollToTopButton from "@/components/scroll-to-top-button";
+import CartierHero from "@/components/CartierHero";
 
 interface Product {
   id: number;
@@ -149,84 +150,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-brand-cream">
       {/* Hero Banner Section */}
       <section className="relative bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
-            {/* Left Content */}
-            <div className="lg:col-span-8 relative">
-              <div className="relative h-[600px] w-full overflow-hidden rounded-lg">
-                <Image
-                  src="/perfumehero.avif"
-                  alt="Namoh Sundari Founder"
-                  width={1920}
-                  height={600}
-                  className="object-cover"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
-
-                {/* Overlay Content */}
-                <div className="absolute bottom-8 left-8 text-white">
-                  <Badge className="bg-brand-terracotta text-white mb-4 px-4 py-2">
-                    Featured in Spiritual Wellness Magazine
-                  </Badge>
-                  <h2 className="font-playfair text-3xl font-bold mb-2">
-                    Ancient Wisdom, Modern Souls
-                  </h2>
-                  <p className="text-white/90 max-w-md">
-                    Discover the transformative power of sacred aromatherapy
-                    with our founder's journey
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Trust Section */}
-            <div className="lg:col-span-4 flex flex-col justify-center p-8 bg-brand-beige/30">
-              <div className="text-center">
-                <div className="mb-6">
-                  <Star className="w-16 h-16 text-brand-gold mx-auto mb-4" />
-                  <h3 className="font-playfair text-2xl font-bold text-brand-brown mb-2">
-                    TRUSTED BY
-                  </h3>
-                  <h2 className="font-playfair text-4xl font-bold text-brand-terracotta mb-4">
-                    SPIRITUAL SEEKERS
-                  </h2>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-center justify-center gap-2">
-                    <Users className="w-5 h-5 text-brand-brown" />
-                    <span className="text-brand-charcoal font-medium">
-                      10,000+ Happy Customers
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Award className="w-5 h-5 text-brand-brown" />
-                    <span className="text-brand-charcoal font-medium">
-                      Featured in 15+ Publications
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <Leaf className="w-5 h-5 text-brand-brown" />
-                    <span className="text-brand-charcoal font-medium">
-                      100% Natural & Cruelty-Free
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-sm text-brand-charcoal/70 mb-6">
-                  WATCH OUR FEATURE ON
-                  <br />
-                  <span className="font-bold">SPIRITUAL WELLNESS TV</span>
-                </p>
-
-                <Button className="bg-brand-brown hover:bg-brand-brown/90 text-white px-6 py-3 rounded-md">
-                  Watch Our Story
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CartierHero />
       </section>
 
       {/* Media Mentions Bar */}
@@ -297,25 +221,25 @@ export default function HomePage() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <Link href={category.link}>
-                    <div className="group relative overflow-hidden rounded-lg cursor-pointer bg-white shadow-soft hover:shadow-hover transition-all duration-300">
-                      <div className="relative aspect-[3/4] overflow-hidden">
+                    <div className="group relative overflow-hidden rounded-2xl cursor-pointer bg-white shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200">
+                      <div className="relative aspect-[3/3.5] overflow-hidden">
                         <Image
                           src={`${process.env.NEXT_PUBLIC_API_URL_IMG}${category.image}`}
                           alt={category.name}
                           fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105 p-8"
                         />
                       </div>
-                      <div className="p-6 text-center">
-                        <h3 className="font-playfair text-xl font-semibold text-brand-brown mb-2">
+                      <div className="p-4 text-center">
+                        <h3 className="font-playfair text-lg font-semibold text-brand-brown mb-1 tracking-wide">
                           {category.name}
                         </h3>
-                        <p className="text-sm text-brand-charcoal/70 mb-4">
+                        <p className="text-xs text-brand-charcoal/70 mb-2 leading-snug">
                           {category.description}
                         </p>
-                        <span className="inline-flex items-center text-sm font-medium text-brand-terracotta">
+                        <span className="inline-flex items-center text-xs font-medium text-brand-terracotta hover:text-brand-brown transition-colors duration-200">
                           Explore Collection
-                          <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                          <ArrowRight className="w-4 h-4 ml-1 transition-transform duration-300 group-hover:translate-x-1" />
                         </span>
                       </div>
                     </div>
@@ -330,32 +254,36 @@ export default function HomePage() {
       {/* Promotional Banners Section */}
       <section className="py-12 bg-brand-cream">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* First Banner */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-xl h-64 md:h-80"
+              className="rounded-xl overflow-hidden border border-gray-300"
             >
-              <Image
-                src="/desktop-2.png"
-                alt="Sacred Rituals Collection"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              <div className="absolute bottom-6 left-6 text-white">
-                <h3 className="font-playfair text-2xl font-bold mb-2">
+              <div className="relative w-full h-[400px] md:h-[500px]">
+                <Image
+                  src="/desktop-2.png"
+                  alt="Sacred Rituals Collection"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="mt-4 px-2 text-center justify-center">
+                <Badge className="bg-brand-terracotta text-white mb-3">
+                  Limited Edition
+                </Badge>
+                <h3 className="font-playfair text-2xl font-bold text-gray-900 mb-2">
                   SOLID PERFUMES
                 </h3>
-                <p className="text-white/90 mb-4">
+                <p className="text-gray-700 mb-4">
                   Enhance your spiritual practice
                 </p>
                 <Button
-                  // variant="outline"
-                  className="border border-white bg-brown text-white hover:bg-brown"
+                  onClick={() => (window.location.href = "/shop")}
+                  className="border border-black bg-brand-terracotta text-white hover:bg-brown"
                 >
                   Shop Now
                 </Button>
@@ -368,28 +296,29 @@ export default function HomePage() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-xl h-64 md:h-80"
+              className="rounded-xl overflow-hidden border border-gray-300"
             >
-              <Image
-                src="/desktop-5-scaled.jpg"
-                alt="Limited Edition"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              <div className="absolute bottom-6 left-6 text-white">
+              <div className="relative w-full h-[400px] md:h-[500px] ">
+                <Image
+                  src="/desktop-5-scaled.jpg"
+                  alt="Limited Edition"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="mt-4 px-2 text-center justify-center ">
                 <Badge className="bg-brand-terracotta text-white mb-3">
                   Limited Edition
                 </Badge>
-                <h3 className="text-white text-2xl font-extrabold mb-2">
+                <h3 className="text-gray-900 text-2xl font-extrabold mb-2">
                   PURFUME WITH PURPOSE
                 </h3>
-                <p className="text-white/90 mb-4">
+                <p className="text-gray-700 mb-4">
                   Handcrafted with sacred temple flowers
                 </p>
                 <Button
-                  // variant="outline"
-                  className="border border-white bg-brown text-white hover:bg-brown"
+                  onClick={() => (window.location.href = "/shop")}
+                  className="border border-black bg-brand-terracotta text-white hover:bg-brown mb-4"
                 >
                   Explore
                 </Button>
